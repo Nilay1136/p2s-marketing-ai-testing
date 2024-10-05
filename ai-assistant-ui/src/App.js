@@ -154,7 +154,7 @@ function App() {
     <div className="app">
       {/* Main Header */}
       <header className="main-header">
-        <CircularLogo />
+        <CircularLogo isBotMessage={false} />
         <h1>{selectedDepartment}</h1>
         {/* Render Department List Component */}
         <DepartmentList

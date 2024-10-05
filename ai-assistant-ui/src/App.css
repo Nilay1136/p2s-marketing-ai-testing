@@ -1,3 +1,10 @@
+@font-face {
+  font-family: 'GT Walsheim';
+  src: url('./fonts/GT-Walsheim-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* General Layout */
 .app {
   display: flex;
@@ -19,7 +26,9 @@
   color: rgb(35, 21, 32);
   height: 80px;
   justify-content: flex-start; /* Left-align header content */
+  font-family: 'GT Walsheim' /* Apply GT Walsheim font */
 }
+
 
 /* Main Body */
 .main-body {
@@ -27,6 +36,7 @@
   flex-grow: 1; /* Take up the rest of the page below the header */
   height: calc(100vh - 80px); /* Subtract header height */
   overflow: hidden; /* Prevent extra scrollbars */
+  font-family: 'GT Walsheim' /* Apply GT Walsheim font */
 }
 
 /* Left Panel (Sidebar) */
@@ -159,7 +169,7 @@
 }
 
 .message {
-  margin-left: 10px;
+  margin-left: 1px;
   padding: 10px;
   max-width: 60%;
   color: rgb(229, 231, 230);
