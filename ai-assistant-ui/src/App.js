@@ -127,7 +127,7 @@ function App() {
     setTimeout(() => {
       const botResponse = {
         sender: 'bot',
-        text: `This is a response from the bot in ${selectedDepartment}.`,
+        text: `This is a response from the ${selectedDepartment} AI Assistant.`,
       };
 
       setConversations((prevConversations) =>
