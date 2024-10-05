@@ -1,7 +1,13 @@
 {
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^1.7.7",
     "react-chat-ui": "^0.4.0",
     "react-icons": "^5.3.0"
+=======
+    "@types/react": "^18.3.10",
+    "lucide-react": "^0.447.0",
+    "react": "^18.3.1"
+>>>>>>> 41751e185bebfead6248dfa30e22bc27253fb9ff
   }
 }
