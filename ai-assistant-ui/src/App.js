@@ -32,6 +32,29 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
   );
 };
 
+// Banner Component to display announcements and events
+const Banner = ({ announcements }) => {
+  const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+
+  // Rotate through announcements every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [announcements]);
+
+  if (!announcements.length) {
+    return null; // No announcements to display
+  }
+
+  return (
+    <div className="banner">
+      <p>{announcements[currentAnnouncement]}</p>
+    </div>
+  );
+};
+
 function App() {
   const [conversations, setConversations] = useState([
     {
@@ -41,6 +64,14 @@ function App() {
         { sender: 'AI Assistant', text: 'Welcome to the conversation!', timestamp: new Date().toLocaleString(), rating: null },
       ],
     },
+  ]);
+
+  const [announcements] = useState([
+    'Benefits Open Enrollment is Monday, Nov. 4, through Friday, Nov. 15.',
+    'The company holiday party is scheduled for Friday, Dec. 20, at 6 PM.',
+    'The annual performance review period is from Monday, Jan. 6, through Friday, Jan. 17.',
+    'The office will be closed on Friday, July 3, in observance of Independence Day.',
+    'Don\'t forget to fill out your timecards at the end of each day.',
   ]);
 
   const [activeConversationId, setActiveConversationId] = useState(1);
@@ -196,6 +227,9 @@ function App() {
           handleDepartmentSelection={handleDepartmentSelection}
         />
       </header>
+
+      {/* Banner for Announcements */}
+      <Banner announcements={announcements} />
 
       {/* Main Body Content */}
       <div className="main-body">
