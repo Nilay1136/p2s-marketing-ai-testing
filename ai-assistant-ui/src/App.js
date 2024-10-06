@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
-import { FaPaperPlane, FaBars, FaChevronLeft, FaChevronRight, FaEdit, FaPlus } from 'react-icons/fa';
+import { FaPaperPlane, FaBars, FaChevronLeft, FaChevronRight, FaEdit, FaPlus, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import logo from './P2S_Legence_Logo_White.png'; // Ensure the correct path for the logo
 
 // Reusable Circular Logo Component for Bot Messages with blue circle and lime green dot
@@ -20,16 +20,14 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
       <button className="department-button" onClick={toggleDepartmentList}>
         <FaBars />
       </button>
-      {isVisible && (
-        <ul className="department-list">
-          <li onClick={() => handleDepartmentSelection('HUMAN RESOURCES')}>HUMAN RESOURCES</li>
-          <li onClick={() => handleDepartmentSelection('PROJECT MANAGEMENT')}>PROJECT MANAGEMENT</li>
-          <li onClick={() => handleDepartmentSelection('ENGINEERING')}>ENGINEERING</li>
-          <li onClick={() => handleDepartmentSelection('BIM')}>BIM</li>
-          <li onClick={() => handleDepartmentSelection('MARKETING')}>MARKETING</li>
-          <li onClick={() => handleDepartmentSelection('IT')}>IT</li>
-        </ul>
-      )}
+      <ul className={`department-list ${isVisible ? 'expanded' : ''}`}>
+        <li onClick={() => handleDepartmentSelection('HUMAN RESOURCES')}>HUMAN RESOURCES</li>
+        <li onClick={() => handleDepartmentSelection('PROJECT MANAGEMENT')}>PROJECT MANAGEMENT</li>
+        <li onClick={() => handleDepartmentSelection('ENGINEERING')}>ENGINEERING</li>
+        <li onClick={() => handleDepartmentSelection('BIM')}>BIM</li>
+        <li onClick={() => handleDepartmentSelection('MARKETING')}>MARKETING</li>
+        <li onClick={() => handleDepartmentSelection('IT')}>IT</li>
+      </ul>
     </div>
   );
 };
@@ -40,8 +38,7 @@ function App() {
       id: 1,
       name: 'Sample Conversation',
       messages: [
-        { sender: 'AI Assistant', text: 'Welcome to the conversation!' },
-        { sender: 'User', text: 'Hello!' },
+        { sender: 'AI Assistant', text: 'Welcome to the conversation!', timestamp: new Date().toLocaleString(), rating: null },
       ],
     },
   ]);
@@ -111,7 +108,7 @@ function App() {
   const handleSendMessage = () => {
     if (userInput.trim() === '') return;
 
-    const newMessage = { sender: 'user', text: userInput };
+    const newMessage = { sender: 'user', text: userInput, timestamp: new Date().toLocaleString() };
 
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
@@ -126,8 +123,10 @@ function App() {
 
     setTimeout(() => {
       const botResponse = {
-        sender: 'bot',
+        sender: 'AI Assistant',
         text: `This is a response from the ${selectedDepartment} AI Assistant.`,
+        timestamp: new Date().toLocaleString(),
+        rating: null, // Add initial null rating
       };
 
       setConversations((prevConversations) =>
@@ -139,6 +138,22 @@ function App() {
       );
       setIsTyping(false);
     }, 2000);
+  };
+
+  // Handle rating a bot response
+  const handleRateMessage = (conversationId, messageIndex, rating) => {
+    setConversations((prevConversations) =>
+      prevConversations.map((conversation) =>
+        conversation.id === conversationId
+          ? {
+              ...conversation,
+              messages: conversation.messages.map((msg, idx) =>
+                idx === messageIndex ? { ...msg, rating } : msg
+              ),
+            }
+          : conversation
+      )
+    );
   };
 
   // Function to toggle the left panel collapse
@@ -232,15 +247,29 @@ function App() {
           <div className="chat-history" ref={chatHistoryRef}>
             {activeConversation?.messages.map((msg, index) => (
               <div key={index} className="message-row">
-                {msg.sender === 'bot' && (
+                {msg.sender === 'AI Assistant' && (
                   <CircularLogo isBotMessage style={{ transform: 'scale(0.5)' }} />
-                )} {/* Reduce the size of the logo for bot messages */}
+                )}
                 <div
                   className={`message ${
                     msg.sender === 'user' ? 'user-message' : 'bot-message'
                   }`}
                 >
                   {msg.text}
+                  <div className="timestamp">{msg.timestamp}</div>
+                  {msg.sender === 'AI Assistant' && (
+                    <div className="rating">
+                      <span>Rate the response:</span>
+                      <FaThumbsUp
+                        className={`thumbs-up ${msg.rating === 'good' ? 'selected' : ''}`}
+                        onClick={() => handleRateMessage(activeConversationId, index, 'good')}
+                      />
+                      <FaThumbsDown
+                        className={`thumbs-down ${msg.rating === 'bad' ? 'selected' : ''}`}
+                        onClick={() => handleRateMessage(activeConversationId, index, 'bad')}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

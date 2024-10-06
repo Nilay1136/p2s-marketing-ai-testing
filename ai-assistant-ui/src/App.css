@@ -1,10 +1,3 @@
-@font-face {
-  font-family: 'GT Walsheim';
-  src: url('./fonts/GT-Walsheim-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
 /* General Layout */
 .app {
   display: flex;
@@ -21,14 +14,13 @@
   background-color: rgb(229, 231, 230); /* Light background for header */
   display: flex;
   align-items: center;
-  padding: 15px; /* Padding around header content */
-  gap: 15px; /* Space between logo and text */
+  padding: 15px;
+  gap: 20px; /* Space between logo and text */
   color: rgb(35, 21, 32);
-  height: 60px;
+  height: 80px;
   justify-content: flex-start; /* Left-align header content */
-  font-family: 'GT Walsheim' /* Apply GT Walsheim font */
+  font-family: 'GT Walsheim', sans-serif;
 }
-
 
 /* Main Body */
 .main-body {
@@ -36,7 +28,6 @@
   flex-grow: 1; /* Take up the rest of the page below the header */
   height: calc(100vh - 80px); /* Subtract header height */
   overflow: hidden; /* Prevent extra scrollbars */
-  font-family: 'GT Walsheim' /* Apply GT Walsheim font */
 }
 
 /* Left Panel (Sidebar) */
@@ -47,10 +38,21 @@
   padding: 10px;
   flex-shrink: 0; /* Fixed width for sidebar */
   overflow-y: auto; /* Enable vertical scrolling */
+  transition: width 0.75s ease; /* Add smooth transition for width */
 }
 
 .left-panel.collapsed {
-  width: 50px;
+  width: 50px; /* Collapsed width */
+  transition: width 0.5s ease; /* Apply transition for collapse */
+}
+
+.history-title, .conversation-item {
+  transition: opacity 0.5s ease; /* Transition for content inside */
+}
+
+.left-panel.collapsed .history-title, 
+.left-panel.collapsed .conversation-item {
+  opacity: 0; /* Hide the text and icons when collapsed */
 }
 
 /* History Header */
@@ -169,7 +171,7 @@
 }
 
 .message {
-  margin-left: 1px;
+  margin-left: 10px;
   padding: 10px;
   max-width: 60%;
   color: rgb(229, 231, 230);
@@ -189,6 +191,25 @@
   margin-right: auto;
   background-color: rgb(52, 106, 134);
   border-radius: 0px 12px 12px 12px;
+}
+
+/* User message timestamp in grey */
+.user-message .timestamp {
+  color: rgb(150, 150, 150);
+}
+
+/* Bot message timestamp in white */
+.bot-message .timestamp {
+  color: white;
+}
+
+/* Align rating to the bottom right corner of the bot message */
+.bot-message .rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  justify-content: flex-end; /* Align to the right */
 }
 
 /* Circular Logo with Blue Circle and Lime Green Dot */
@@ -229,6 +250,35 @@
 .bot-logo {
   transform: scale(0.5); /* Scale down logo */
 }
+
+/* Timestamp */
+.timestamp {
+  font-size: 0.75rem;
+  color: rgb(150, 150, 150);
+  margin-top: 5px;
+}
+
+/* Rating Section */
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  justify-content: flex-end; /* Align to the right */
+}
+
+.thumbs-up, .thumbs-down {
+  cursor: pointer;
+}
+
+.thumbs-up.selected, .thumbs-down.selected {
+  color: black; /* Change the selected color to black */
+}
+
+.thumbs-up:hover, .thumbs-down:hover {
+  opacity: 0.7;
+}
+
 
 /* Typing Indicator */
 .typing-indicator {
@@ -332,7 +382,6 @@
   background-color: rgb(35, 21, 32);
 }
 
-/* Department List */
 .department-list {
   list-style: none;
   padding: 0;
@@ -344,9 +393,19 @@
   right: 0;
   width: 200px;
   border-radius: 5px;
-  z-index: 10; /* Ensure it overlays other UI components */
+  z-index: 10;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  opacity: 0; /* Hidden state */
+  height: 0; /* Collapsed state */
+  overflow: hidden; /* Hide content when collapsed */
+  transition: opacity 0.4s ease, height 0.4s ease; /* Smooth fade and height transition */
 }
+
+.department-list.expanded {
+  opacity: 1; /* Fully visible */
+  height: auto; /* Expand to fit content */
+}
+
 
 .department-list li {
   padding: 10px;
