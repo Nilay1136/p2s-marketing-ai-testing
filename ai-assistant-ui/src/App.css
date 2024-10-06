@@ -410,7 +410,7 @@
 .department-list li {
   padding: 10px;
   cursor: pointer;
-  text-transform: uppercase;
+  /* text-transform: uppercase; */
 }
 
 .department-list li:hover {

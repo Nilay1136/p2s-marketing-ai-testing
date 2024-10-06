@@ -21,11 +21,11 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
         <FaBars />
       </button>
       <ul className={`department-list ${isVisible ? 'expanded' : ''}`}>
-        <li onClick={() => handleDepartmentSelection('HUMAN RESOURCES')}>HUMAN RESOURCES</li>
-        <li onClick={() => handleDepartmentSelection('PROJECT MANAGEMENT')}>PROJECT MANAGEMENT</li>
-        <li onClick={() => handleDepartmentSelection('ENGINEERING')}>ENGINEERING</li>
+        <li onClick={() => handleDepartmentSelection('Human Resources')}>Human Resources</li>
+        <li onClick={() => handleDepartmentSelection('Project Management')}>Project Management</li>
+        <li onClick={() => handleDepartmentSelection('Engineering')}>Engineering</li>
         <li onClick={() => handleDepartmentSelection('BIM')}>BIM</li>
-        <li onClick={() => handleDepartmentSelection('MARKETING')}>MARKETING</li>
+        <li onClick={() => handleDepartmentSelection('Marketing')}>Marketing</li>
         <li onClick={() => handleDepartmentSelection('IT')}>IT</li>
       </ul>
     </div>
@@ -69,6 +69,24 @@ function App() {
   const handleDepartmentSelection = (department) => {
     setSelectedDepartment(department);
     setIsDepartmentListVisible(false);
+
+    // Create a casual bot message after department selection
+    const departmentBotMessage = {
+      sender: 'AI Assistant',
+      text: `You've chosen the ${department} AI Assistant! I’ll be answering your questions using information from our ${department} knowledge base.`
+      + ` How can I help you today?`,
+      timestamp: new Date().toLocaleString(),
+      rating: null,
+    };
+
+    // Append the bot message to the conversation
+    setConversations((prevConversations) =>
+      prevConversations.map((conversation) =>
+        conversation.id === activeConversationId
+          ? { ...conversation, messages: [...conversation.messages, departmentBotMessage] }
+          : conversation
+      )
+    );
   };
 
   // Function to handle adding a new conversation
