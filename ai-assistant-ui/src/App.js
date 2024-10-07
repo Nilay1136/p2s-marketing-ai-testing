@@ -300,7 +300,7 @@ function App() {
             {activeConversation?.messages.map((msg, index) => (
               <div key={index} className="message-row">
                 {msg.sender === 'AI Assistant' && (
-                  <CircularLogo isBotMessage style={{ transform: 'scale(0.5)' }} />
+                  <CircularLogo isBotMessage style={{ transform: 'scale(0.75)' }} />
                 )}
                 <div
                   className={`message ${

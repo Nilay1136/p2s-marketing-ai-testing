@@ -248,7 +248,7 @@
 
 /* For bot messages: Scale down logo by 50% */
 .bot-logo {
-  transform: scale(0.5); /* Scale down logo */
+  transform: scale(0.75); /* Scale down logo */
 }
 
 /* Timestamp */
@@ -418,7 +418,6 @@
   overflow: hidden; /* Hide content when collapsed */
   /*transition: opacity 0.4s ease, height 1s ease; /* Smooth fade and height transition */
   transition: height 0.6s ease, opacity 0.4s ease 0.2s, transform 0.6s ease; /* Add delay for opacity */
-
 }
 
 .department-list.expanded {
