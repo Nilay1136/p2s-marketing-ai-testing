@@ -1,0 +1,454 @@
+/* General Layout */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw; /* Make width dynamic */
+  background-color: rgb(229, 231, 230); /* Background for all panels */
+  overflow: hidden;
+}
+
+/* Main Header */
+.main-header {
+  width: 100%; /* Full width */
+  background-color: rgb(229, 231, 230); /* Light background for header */
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  gap: 20px; /* Space between logo and text */
+  color: rgb(35, 21, 32);
+  height: 80px;
+  justify-content: flex-start; /* Left-align header content */
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+/* Main Body */
+.main-body {
+  display: flex;
+  flex-grow: 1; /* Take up the rest of the page below the header */
+  height: calc(100vh - 80px); /* Subtract header height */
+  overflow: hidden; /* Prevent extra scrollbars */
+}
+
+/* Left Panel (Sidebar) */
+.left-panel {
+  width: 200px;
+  background-color: rgb(229, 231, 230);
+  color: rgb(52, 106, 134);
+  padding: 10px;
+  flex-shrink: 0; /* Fixed width for sidebar */
+  overflow-y: auto; /* Enable vertical scrolling */
+  transition: width 1.5s ease; /* Add smooth transition for width */
+}
+
+.left-panel.collapsed {
+  width: 50px; /* Collapsed width */
+  transition: width 1.5s ease; /* Apply transition for collapse */
+}
+
+.history-title, .conversation-item {
+  transition: opacity 1.5s ease; /* Transition for content inside */
+}
+
+.left-panel.collapsed .history-title, 
+.left-panel.collapsed .conversation-item {
+  opacity: 0; /* Hide the text and icons when collapsed */
+}
+
+/* History Header */
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: rgb(35, 21, 32);
+}
+
+.history-title.collapsed {
+  display: none; /* Hide the "History" text when collapsed */
+}
+
+.sidebar-toggle {
+  cursor: pointer;
+  color: rgb(52, 106, 134);
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+}
+
+.sidebar-toggle:hover {
+  color: rgb(35, 21, 32);
+}
+
+/* Conversation List */
+.left-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0 0;
+}
+
+.conversation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: rgb(52, 106, 134);
+  border-radius: 5px;
+  color: rgb(229, 231, 230);
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.conversation-item:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+.active-conversation {
+  background-color: rgb(35, 21, 32);
+  color: rgb(229, 231, 230);
+}
+
+.edit-conversation input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 5px;
+}
+
+.edit-button {
+  background-color: transparent;
+  border: none;
+  color: rgb(229, 231, 230);
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.edit-button:hover {
+  color: rgb(35, 21, 32);
+}
+
+.add-conversation-button {
+  margin-top: 10px;
+  background-color: rgb(52, 106, 134);
+  color: white;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 5px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-conversation-button:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+/* Chat Panel */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  background-color: rgb(229, 231, 230);
+  height: 100%;
+  overflow: hidden;
+}
+
+.chat-history {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.message-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.message {
+  margin-left: 10px;
+  padding: 10px;
+  max-width: 60%;
+  color: rgb(229, 231, 230);
+  word-wrap: break-word;
+}
+
+.user-message {
+  align-self: flex-end;
+  margin-left: auto;
+  background-color: white;
+  color: rgb(52, 106, 134);
+  border-radius: 12px 0px 12px 12px;
+}
+
+.bot-message {
+  align-self: flex-start;
+  margin-right: auto;
+  background-color: rgb(52, 106, 134);
+  border-radius: 0px 12px 12px 12px;
+}
+
+/* User message timestamp in grey */
+.user-message .timestamp {
+  color: rgb(150, 150, 150);
+}
+
+/* Bot message timestamp in white */
+.bot-message .timestamp {
+  color: white;
+}
+
+/* Align rating to the bottom right corner of the bot message */
+.bot-message .rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  justify-content: flex-end; /* Align to the right */
+}
+
+/* Circular Logo with Blue Circle and Lime Green Dot */
+.circular-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative; /* For lime green dot placement */
+}
+
+.blue-circle {
+  width: 50px;
+  height: 50px;
+  background-color: rgb(52, 106, 134); /* Blue circle */
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.circular-logo-image {
+  width: auto;
+  height: 15px; /* Shrink to fit */
+}
+
+.lime-green-dot {
+  position: absolute;
+  bottom: -2px; /* Adjusted to position along the bottom edge */
+  left: -2px; /* Adjusted to position along the left edge */
+  width: 10px;
+  height: 10px;
+  background-color: limegreen;
+  border-radius: 50%;
+  border: 2px solid white; /* White outline */
+}
+
+/* For bot messages: Scale down logo by 50% */
+.bot-logo {
+  transform: scale(0.5); /* Scale down logo */
+}
+
+/* Timestamp */
+.timestamp {
+  font-size: 0.75rem;
+  color: rgb(150, 150, 150);
+  margin-top: 5px;
+}
+
+/* Rating Section */
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+  justify-content: flex-end; /* Align to the right */
+}
+
+.thumbs-up, .thumbs-down {
+  cursor: pointer;
+}
+
+.thumbs-up.selected, .thumbs-down.selected {
+  color: black; /* Change the selected color to black */
+}
+
+.thumbs-up:hover, .thumbs-down:hover {
+  opacity: 0.7;
+}
+
+
+/* Typing Indicator */
+.typing-indicator {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background-color: rgb(52, 106, 134);
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0% {
+    opacity: 0.2;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.2;
+  }
+}
+
+/* Chat Input */
+.chat-input {
+  display: flex;
+  padding: 10px;
+  background-color: rgb(229, 231, 230);
+  border-top: 1px solid rgb(52, 106, 134);
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 5px;
+  color: rgb(52, 106, 134);
+  background-color: rgb(229, 231, 230);
+}
+
+.chat-input button {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-input button:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+/* Scrollbar customization for WebKit-based browsers (Chrome, Safari) */
+.chat-history::-webkit-scrollbar {
+  width: 20px; /* Width of the scrollbar */
+}
+
+.chat-history::-webkit-scrollbar-track {
+  background-color: rgb(229, 231, 230); /* Track color (matches panel background) */
+}
+
+.chat-history::-webkit-scrollbar-thumb {
+  background-color: rgb(52, 106, 134); /* Thumb (scroll handle) color */
+  border-radius: 0px; /* Rounded edges for the scrollbar thumb */
+}
+
+.chat-history::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(35, 21, 32); /* Darker color on hover */
+}
+
+/* Department Button */
+.department-dropdown {
+  position: absolute; /* Position over content */
+  top: 15px;
+  right: 15px;
+  z-index: 20; /* Ensure it overlays other UI components */
+}
+
+.department-button {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.department-button:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+.department-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  position: absolute;
+  top: 35px;
+  right: 0;
+  width: 200px;
+  border-radius: 5px;
+  z-index: 10;
+  box-shadow: 0 4px 8px rgba(29, 26, 26, 0.1);
+  opacity: 0; /* Hidden state */
+  height: 0; /* Collapsed state */
+  overflow: hidden; /* Hide content when collapsed */
+  /*transition: opacity 0.4s ease, height 1s ease; /* Smooth fade and height transition */
+  transition: height 0.6s ease, opacity 0.4s ease 0.2s, transform 0.6s ease; /* Add delay for opacity */
+
+}
+
+.department-list.expanded {
+  opacity: 1; /* Fully visible */
+  height: 190px; /* Expand to fit content */
+  transform: translateY(0); /* Move into position */
+}
+
+.department-list li {
+  padding: 10px;
+  cursor: pointer;
+  /* text-transform: uppercase; */
+}
+
+.department-list li:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+.banner {
+  background-color: rgb(52, 106, 134); /* Blue banner */
+  color: white; /* Text color */
+  padding: 6px;
+  font-size: 1.1rem;
+  font-family: 'GT Walsheim Regular', sans-serif;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 25px;
+  z-index: 10; /* Ensure it stays on top */
+  display: flex; /* Use flexbox for vertical alignment */
+  align-items: center; /* Center items vertically */
+  justify-content: center; /* Center items horizontally */
+}
