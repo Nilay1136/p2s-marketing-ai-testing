@@ -36,7 +36,6 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
 const Banner = ({ announcements }) => {
   const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
 
-  // Rotate through announcements every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
@@ -80,37 +79,32 @@ function App() {
   const [isDepartmentListVisible, setIsDepartmentListVisible] = useState(false);
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('Select an AI Assistant');
+  const [isRightPanelVisible, setIsRightPanelVisible] = useState(false); // State for right panel visibility
   const [editMode, setEditMode] = useState({});
 
   const chatHistoryRef = useRef(null); // Reference to chat history
 
-  // Scroll to the bottom of the chat history when a new message is added
   useEffect(() => {
     if (chatHistoryRef.current) {
       chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
     }
-  }, [conversations, isTyping]); // Scroll when conversations or typing state changes
+  }, [conversations, isTyping]);
 
-  // Toggle the department dropdown visibility
   const toggleDepartmentList = () => {
     setIsDepartmentListVisible(!isDepartmentListVisible);
   };
 
-  // Handle department selection
   const handleDepartmentSelection = (department) => {
     setSelectedDepartment(department);
     setIsDepartmentListVisible(false);
 
-    // Create a casual bot message after department selection
     const departmentBotMessage = {
       sender: 'AI Assistant',
-      text: `You've chosen the ${department} AI Assistant! I’ll be answering your questions using information from our ${department} knowledge base.`
-      + ` How can I help you today?`,
+      text: `You've chosen the ${department} AI Assistant! I’ll be answering your questions using information from our ${department} knowledge base. How can I help you today?`,
       timestamp: new Date().toLocaleString(),
       rating: null,
     };
 
-    // Append the bot message to the conversation
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
         conversation.id === activeConversationId
@@ -120,7 +114,6 @@ function App() {
     );
   };
 
-  // Function to handle adding a new conversation
   const handleAddConversation = () => {
     if (conversations.length < 10) {
       const newConversation = {
@@ -135,17 +128,15 @@ function App() {
     }
   };
 
-  // Function to handle editing a conversation name
   const handleEditConversationName = (id, newName) => {
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
         conversation.id === id ? { ...conversation, name: newName } : conversation
       )
     );
-    setEditMode((prevEditMode) => ({ ...prevEditMode, [id]: false })); // Turn off edit mode after saving
+    setEditMode((prevEditMode) => ({ ...prevEditMode, [id]: false })); 
   };
 
-  // Function to toggle edit mode for a conversation
   const toggleEditMode = (id) => {
     setEditMode((prevEditMode) => ({
       ...prevEditMode,
@@ -153,7 +144,6 @@ function App() {
     }));
   };
 
-  // Function to handle sending messages
   const handleSendMessage = () => {
     if (userInput.trim() === '') return;
 
@@ -167,6 +157,13 @@ function App() {
       )
     );
 
+    // Check for 'proposal' to show the right panel and 'hide display area' to hide it
+    if (userInput.toLowerCase().includes('proposal')) {
+      setIsRightPanelVisible(true);  // Show the right panel
+    } else if (userInput.toLowerCase().includes('hide display area')) {
+      setIsRightPanelVisible(false); // Hide the right panel if "hide display area" is typed
+    }
+
     setUserInput('');
     setIsTyping(true);
 
@@ -175,7 +172,7 @@ function App() {
         sender: 'AI Assistant',
         text: `This is a response from the ${selectedDepartment} AI Assistant.`,
         timestamp: new Date().toLocaleString(),
-        rating: null, // Add initial null rating
+        rating: null, 
       };
 
       setConversations((prevConversations) =>
@@ -189,7 +186,6 @@ function App() {
     }, 2000);
   };
 
-  // Handle rating a bot response
   const handleRateMessage = (conversationId, messageIndex, rating) => {
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
@@ -205,7 +201,6 @@ function App() {
     );
   };
 
-  // Function to toggle the left panel collapse
   const toggleLeftPanel = () => {
     setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
   };
@@ -216,11 +211,9 @@ function App() {
 
   return (
     <div className="app">
-      {/* Main Header */}
       <header className="main-header">
         <CircularLogo isBotMessage={false} />
         <h1>{selectedDepartment}</h1>
-        {/* Render Department List Component */}
         <DepartmentList
           isVisible={isDepartmentListVisible}
           toggleDepartmentList={toggleDepartmentList}
@@ -228,14 +221,10 @@ function App() {
         />
       </header>
 
-      {/* Banner for Announcements */}
       <Banner announcements={announcements} />
 
-      {/* Main Body Content */}
       <div className="main-body">
-        {/* Left Sidebar (History) */}
         <div className={`left-panel ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
-          {/* History Header */}
           <div className="history-header">
             <h3 className={`history-title ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
               History
@@ -245,7 +234,6 @@ function App() {
             </div>
           </div>
 
-          {/* Conversation List and Add Button */}
           {!isLeftPanelCollapsed && (
             <>
               <ul>
@@ -284,23 +272,19 @@ function App() {
                   </li>
                 ))}
               </ul>
-              <button
-                className="add-conversation-button"
-                onClick={handleAddConversation}
-              >
+              <button className="add-conversation-button" onClick={handleAddConversation}>
                 <FaPlus /> Add Conversation
               </button>
             </>
           )}
         </div>
 
-        {/* Chat Input Section */}
         <div className="chat-panel">
           <div className="chat-history" ref={chatHistoryRef}>
             {activeConversation?.messages.map((msg, index) => (
               <div key={index} className="message-row">
                 {msg.sender === 'AI Assistant' && (
-                  <CircularLogo isBotMessage style={{ transform: 'scale(0.75)' }} />
+                  <CircularLogo isBotMessage style={{ transform: 'scale(0.5)' }} />
                 )}
                 <div
                   className={`message ${
@@ -346,6 +330,13 @@ function App() {
             </button>
           </div>
         </div>
+
+        {isRightPanelVisible && (
+          <div className="right-panel">
+            <h3>Proposal Details</h3>
+            <p>Here you can find information related to the proposal process.</p>
+          </div>
+        )}
       </div>
     </div>
   );

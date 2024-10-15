@@ -246,7 +246,7 @@
   border: 2px solid white; /* White outline */
 }
 
-/* For bot messages: Scale down logo by 50% */
+/* For bot messages: Scale down logo by 75% */
 .bot-logo {
   transform: scale(0.75); /* Scale down logo */
 }
@@ -418,6 +418,7 @@
   overflow: hidden; /* Hide content when collapsed */
   /*transition: opacity 0.4s ease, height 1s ease; /* Smooth fade and height transition */
   transition: height 0.6s ease, opacity 0.4s ease 0.2s, transform 0.6s ease; /* Add delay for opacity */
+
 }
 
 .department-list.expanded {
@@ -450,4 +451,27 @@
   display: flex; /* Use flexbox for vertical alignment */
   align-items: center; /* Center items vertically */
   justify-content: center; /* Center items horizontally */
+}
+
+/* Right Panel Styles */
+.right-panel {
+  width: 300px;
+  background-color: rgb(229, 231, 230);
+  color: rgb(52, 106, 134);
+  padding: 20px;
+  border-left: 1px solid rgb(52, 106, 134);
+  box-shadow: -4px 0px 8px rgba(29, 26, 26, 0.1);
+  flex-shrink: 0; /* Prevent shrinking */
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.right-panel h3 {
+  color: rgb(35, 21, 32);
+  margin-bottom: 10px;
+}
+
+.right-panel p {
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
