@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './App.css';
 import { FaPaperPlane, FaBars, FaChevronLeft, FaChevronRight, FaEdit, FaPlus, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import logo from './P2S_Legence_Logo_White.png'; // Ensure the correct path for the logo
@@ -34,24 +34,83 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
 
 // Banner Component to display announcements and events
 const Banner = ({ announcements }) => {
-  const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0); // Track the current announcement
+  const [isPaused, setIsPaused] = useState(false); // Paused when user interacts
+  const [key, setKey] = useState(0); // Key to force re-render
+  const bannerTextRef = useRef(null);
 
+  // Calculate the animation duration based on the text width and a fixed speed
+  const animationDuration = useMemo(() => {
+    const bannerTextElement = bannerTextRef.current;
+    const bannerWrapper = document.querySelector('.banner-text-wrapper');
+
+    if (bannerTextElement && bannerWrapper) {
+      const textWidth = bannerTextElement.offsetWidth;
+      const wrapperWidth = bannerWrapper.offsetWidth;
+      const scrollSpeed = 50; // Adjust this value to set the speed (pixels per second)
+      return (textWidth + wrapperWidth) / scrollSpeed;
+    }
+    return 0;
+  }, []);
+
+  // Handle auto-scrolling through the announcements
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [announcements]);
+    const autoScroll = setInterval(() => {
+      if (!isPaused) {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length); // Loop through announcements
+        setKey((prevKey) => prevKey + 1); // Force re-render to reset animation
+      }
+    }, 10000); // Change every 5 seconds
 
-  if (!announcements.length) {
-    return null; // No announcements to display
-  }
+    return () => clearInterval(autoScroll); // Cleanup interval
+  }, [isPaused, announcements.length]);
+
+  // Pause auto-scroll on mouse enter and resume on mouse leave
+  useEffect(() => {
+    const bannerElement = document.querySelector('.banner');
+    const handleMouseEnter = () => setIsPaused(true);
+    const handleMouseLeave = () => setIsPaused(false);
+
+    bannerElement.addEventListener('mouseenter', handleMouseEnter);
+    bannerElement.addEventListener('mouseleave', handleMouseLeave);
+
+    return () => {
+      bannerElement.removeEventListener('mouseenter', handleMouseEnter);
+      bannerElement.removeEventListener('mouseleave', handleMouseLeave);
+    };
+  }, []);
+
+  // Manually go to the next announcement
+  const handleNext = () => {
+    setIsPaused(true); // Pause auto scroll
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length); // Move to next announcement
+    setKey((prevKey) => prevKey + 1); // Force re-render to reset animation
+  };
+
+  // Manually go to the previous announcement
+  const handlePrev = () => {
+    setIsPaused(true); // Pause auto scroll
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + announcements.length) % announcements.length); // Move to previous
+    setKey((prevKey) => prevKey + 1); // Force re-render to reset animation
+  };
 
   return (
     <div className="banner">
-      <p>{announcements[currentAnnouncement]}</p>
+      <button className="prev-button" onClick={handlePrev}>{'<'}</button> {/* Button to go to the previous announcement */}
+      
+      <div className="banner-text-wrapper">
+        <span 
+          key={key} // Use key to force re-render
+          className="banner-text"
+          ref={bannerTextRef}
+          style={{ animationDuration: `${animationDuration}s` }}
+          dangerouslySetInnerHTML={{ __html: announcements[currentIndex] }}
+        ></span> {/* Display the current announcement */}
+      </div>
+
+      <button className="next-button" onClick={handleNext}>{'>'}</button> {/* Button to go to the next announcement */}
     </div>
-  );
+  ); 
 };
 
 function App() {
@@ -67,9 +126,10 @@ function App() {
 
   const [announcements] = useState([
     'Benefits Open Enrollment is Monday, Nov. 4, through Friday, Nov. 15.',
-    'The company holiday party is scheduled for Friday, Dec. 20, at 6 PM.',
-    'The annual performance review period is from Monday, Jan. 6, through Friday, Jan. 17.',
-    'The office will be closed on Friday, July 3, in observance of Independence Day.',
+    'Upcoming Company Holidays: November 28-29 & December 24, 2024-January 1, 2025.',
+    'P2S 2025 Payroll and Holiday Calendar is available on the Intranet > HR > HR Toolbox.',
+    'FSA Reminder: You have until December 31 to incur eligible expenses for the 2024 plan year. Unused funds (up to $610) in your Healthcare FSA will roll over to the next plan year. Any amount over $610 will be forfeited.',
+    'Update your Employee Information (Address Changes): To ensure you receive end-of-year tax and benefit information, please confirm that your address and other personal details are accurate in <a href="https://access.paylocity.com/">Paylocity</a>.',
     'Don\'t forget to fill out your timecards at the end of each day.',
   ]);
 
@@ -284,7 +344,7 @@ function App() {
             {activeConversation?.messages.map((msg, index) => (
               <div key={index} className="message-row">
                 {msg.sender === 'AI Assistant' && (
-                  <CircularLogo isBotMessage style={{ transform: 'scale(0.5)' }} />
+                  <CircularLogo isBotMessage={true} style={{ transform: 'scale(0.5)' }} />
                 )}
                 <div
                   className={`message ${
