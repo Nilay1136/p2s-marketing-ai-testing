@@ -75,6 +75,51 @@ const Banner = ({ announcements }) => {
   ); 
 };
 
+const Footer = () => {
+  const [showAboutTooltip, setShowAboutTooltip] = useState(false);
+  const [showDisclaimerTooltip, setShowDisclaimerTooltip] = useState(false);
+
+  return (
+    <footer className="footer">
+      <div className="footer-left">
+        <div 
+          className="tooltip-container" 
+          onMouseEnter={() => setShowAboutTooltip(true)} 
+          onMouseLeave={() => setShowAboutTooltip(false)}
+        >
+          <span className="footer-text">About</span>
+          {showAboutTooltip && (
+            <div className="tooltip">
+              Our P2S AI Assistant was developed by Nilay Nagar, Chad Peterson, and Jonathan Herrera.
+            </div>
+          )}
+        </div>
+
+        <div 
+          className="tooltip-container" 
+          onMouseEnter={() => setShowDisclaimerTooltip(true)} 
+          onMouseLeave={() => setShowDisclaimerTooltip(false)}
+        >
+          <span className="footer-text"> | Disclaimer</span>
+          {showDisclaimerTooltip && (
+            <div className="tooltip">
+              Disclaimer: AI-generated responses may not always be accurate. 
+              Verify information before making decisions.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="footer-right">
+        <a href="https://www.p2sinc.com" target="_blank" rel="noopener noreferrer">
+          www.p2sinc.com
+        </a>
+        <span> | © {new Date().getFullYear()} P2S All rights reserved.</span>
+      </div>
+    </footer>
+  );
+};
+
 function App() {
   const [conversations, setConversations] = useState([
     {
@@ -359,6 +404,10 @@ function App() {
             <p>Here you can find information related to the proposal process.</p>
           </div>
         )}
+      </div>
+
+      <div className="footer-panel">
+          <Footer />
       </div>
     </div>
   );

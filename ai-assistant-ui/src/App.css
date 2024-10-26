@@ -446,7 +446,7 @@
   font-family: 'GT Walsheim Regular', sans-serif; /* Use custom font */
   position: sticky; /* Stick to the top */
   top: 0; /* Stick to the top */
-  width: 100%; /* Full width */
+  /* width: 100%; Full width */
   min-height: 25px; /* Flexible height for larger text */
   z-index: 10; /* Ensure it stays on top */
   display: flex; /* Use flexbox for vertical alignment */
@@ -501,6 +501,85 @@
   100% {
     transform: translateX(-100%); /* Move text out of view */
   }
+}
+
+/* Footer Styles */
+.footer-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(52, 106, 134);
+  color: white;
+  padding: 10px;
+  font-family: 'GT Walsheim', sans-serif;
+  font-size: 0.9rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.footer-left, .footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.footer-left .tooltip-container {
+  margin-right: 4px; /* Space between About and Disclaimer */
+}
+
+.footer-right a {
+  margin-right: 6px; /* Space between link and text */
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-right span {
+  color: white;
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 110%; /* Position tooltip above the label */
+  left: 0; /* Align to the left edge of the label */
+  padding: 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  z-index: 10;
+  text-align: left; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.9); 
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; /* Position below the tooltip */
+  left: 2%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
 }
 
 /* Right Panel Styles */
