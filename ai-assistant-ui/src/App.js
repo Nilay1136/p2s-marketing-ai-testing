@@ -103,7 +103,7 @@ const Footer = () => {
           <span className="footer-text"> | Disclaimer</span>
           {showDisclaimerTooltip && (
             <div className="tooltip">
-              Disclaimer: AI-generated responses may not always be accurate. 
+              AI-generated responses may not always be accurate. 
               Verify information before making decisions.
             </div>
           )}
