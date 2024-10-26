@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { FaPaperPlane, FaBars, FaChevronLeft, FaChevronRight, FaEdit, FaPlus, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import logo from './P2S_Legence_Logo_White.png'; // Ensure the correct path for the logo
@@ -34,81 +34,43 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
 
 // Banner Component to display announcements and events
 const Banner = ({ announcements }) => {
-  const [currentIndex, setCurrentIndex] = useState(0); // Track the current announcement
-  const [isPaused, setIsPaused] = useState(false); // Paused when user interacts
-  const [key, setKey] = useState(0); // Key to force re-render
   const bannerTextRef = useRef(null);
+  const [animationDuration, setAnimationDuration] = useState(0);
 
-  // Calculate the animation duration based on the text width and a fixed speed
-  const animationDuration = useMemo(() => {
-    const bannerTextElement = bannerTextRef.current;
-    const bannerWrapper = document.querySelector('.banner-text-wrapper');
-
-    if (bannerTextElement && bannerWrapper) {
-      const textWidth = bannerTextElement.offsetWidth;
-      const wrapperWidth = bannerWrapper.offsetWidth;
-      const scrollSpeed = 50; // Adjust this value to set the speed (pixels per second)
-      return (textWidth + wrapperWidth) / scrollSpeed;
-    }
-    return 0;
-  }, []);
-
-  // Handle auto-scrolling through the announcements
   useEffect(() => {
-    const autoScroll = setInterval(() => {
-      if (!isPaused) {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length); // Loop through announcements
-        setKey((prevKey) => prevKey + 1); // Force re-render to reset animation
+    const updateAnimationDuration = () => {
+      const bannerTextElement = bannerTextRef.current;
+      const bannerWrapper = document.querySelector('.banner-text-wrapper');
+
+      if (bannerTextElement && bannerWrapper) {
+        // const textWidth = bannerTextElement.offsetWidth;
+        // const wrapperWidth = bannerWrapper.offsetWidth;
+        // const scrollSpeed = 65; // Adjust this value to set the speed (pixels per second)
+        // setAnimationDuration((textWidth + wrapperWidth) / scrollSpeed);
+        setAnimationDuration(150); // Set a fixed duration for the animation
       }
-    }, 10000); // Change every 5 seconds
+    };
 
-    return () => clearInterval(autoScroll); // Cleanup interval
-  }, [isPaused, announcements.length]);
-
-  // Pause auto-scroll on mouse enter and resume on mouse leave
-  useEffect(() => {
-    const bannerElement = document.querySelector('.banner');
-    const handleMouseEnter = () => setIsPaused(true);
-    const handleMouseLeave = () => setIsPaused(false);
-
-    bannerElement.addEventListener('mouseenter', handleMouseEnter);
-    bannerElement.addEventListener('mouseleave', handleMouseLeave);
+    updateAnimationDuration();
+    window.addEventListener('resize', updateAnimationDuration);
 
     return () => {
-      bannerElement.removeEventListener('mouseenter', handleMouseEnter);
-      bannerElement.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('resize', updateAnimationDuration);
     };
-  }, []);
+  }, [announcements]);
 
-  // Manually go to the next announcement
-  const handleNext = () => {
-    setIsPaused(true); // Pause auto scroll
-    setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length); // Move to next announcement
-    setKey((prevKey) => prevKey + 1); // Force re-render to reset animation
-  };
-
-  // Manually go to the previous announcement
-  const handlePrev = () => {
-    setIsPaused(true); // Pause auto scroll
-    setCurrentIndex((prevIndex) => (prevIndex - 1 + announcements.length) % announcements.length); // Move to previous
-    setKey((prevKey) => prevKey + 1); // Force re-render to reset animation
-  };
+  const combinedAnnouncments = announcements.join(" ~~~●~~~ "); // Combine all announcements for animation
 
   return (
     <div className="banner">
-      <button className="prev-button" onClick={handlePrev}>{'<'}</button> {/* Button to go to the previous announcement */}
-      
       <div className="banner-text-wrapper">
         <span 
-          key={key} // Use key to force re-render
           className="banner-text"
           ref={bannerTextRef}
           style={{ animationDuration: `${animationDuration}s` }}
-          dangerouslySetInnerHTML={{ __html: announcements[currentIndex] }}
-        ></span> {/* Display the current announcement */}
+          dangerouslySetInnerHTML={{ __html: combinedAnnouncments}}
+        ></span>
       </div>
-
-      <button className="next-button" onClick={handleNext}>{'>'}</button> {/* Button to go to the next announcement */}
     </div>
   ); 
 };

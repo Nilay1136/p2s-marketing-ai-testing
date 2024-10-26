@@ -437,6 +437,7 @@
   background-color: rgb(35, 21, 32);
 }
 
+/* Banner Styles */
 .banner {
   background-color: rgb(52, 106, 134); /* Blue banner */
   color: white; /* Text color */
@@ -454,57 +455,30 @@
   overflow: hidden; /* Hide overflow */
 }
 
-.banner-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between; /* Ensure buttons are placed symmetrically on both sides */
-  position: relative;
-  width: 100%;
-  padding: 0 20px; /* Add some padding to prevent the buttons from going offscreen */
-}
-
-.banner-button {
-  background-color: transparent;
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-size: 1.5rem;
-  padding: 10px;
-  position: absolute; /* Position the buttons within the banner */
-  z-index: 2; /* Ensure the buttons are above the banner text */
-}
-
-.prev-button {
-  left: 10px; /* Adjust left button */
-}
-
-.next-button {
-  right: 10px; /* Adjust right button */
-}
-
+/* Banner Text Styles */
 .banner-text-wrapper {
   display: flex; /* Use flexbox for alignment */
   justify-content: center; /* Center items horizontally */
   align-items: center; /* Center items vertically */
   flex: 1; /* Take up remaining space */
   white-space: nowrap; /* Prevent text wrapping */
-  overflow: hidden; /* Hide overflow */
   position: relative; /* Position relative for absolute children */
 }
 
+/* Banner Text Animation Styles */
 .banner-text {
-  padding: 0 10px; /* Add padding around text */
   display: inline-block; /* Display as inline block */
-  max-width: 95%; /* Limit text width */
   white-space: nowrap; /* Prevent text from wrapping */
-  animation: scroll-text linear infinite; /* Continuous scroll animation */
+  will-change: transform; /* Optimize for animation */
 }
 
+/* Banner Text Link Styles */
 .banner-text a {
   color: white; /* Make hyperlinks white */
   text-decoration: underline; /* Underline the links */
 }
 
+/* Banner Text Link Hover Styles */
 .banner-text a:hover {
   color: #e0e0e0;
 }
@@ -515,28 +489,14 @@
   animation-play-state: running; /* Default running */
 }
 
+/* Pause animation on hover */
 .banner-text-wrapper:hover .banner-text {
   animation-play-state: paused; /* Pause animation on hover */
 }
 
-.prev-button, .next-button {
-  background-color: rgba(35, 21, 32, 0.5);
-  color: white;
-  border: none;
-
-  cursor: pointer;
-  padding: 5px 10px;
-  margin: 1px;
-  border-radius: 3px;
-}
-
-.banner-controls button:hover {
-  background-color: rgba(35, 21, 32, 0.8);
-}
-
 @keyframes scroll-text {
   0% {
-    transform: translateX(10%); /* Start outside of view */
+    transform: translateX(100%); /* Start outside of view */
   }
   100% {
     transform: translateX(-100%); /* Move text out of view */
