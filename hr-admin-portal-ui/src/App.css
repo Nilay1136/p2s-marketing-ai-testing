@@ -265,7 +265,7 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  left: 2%;
   transform: translateX(-50%);
   border-width: 8px;
   border-style: solid;
