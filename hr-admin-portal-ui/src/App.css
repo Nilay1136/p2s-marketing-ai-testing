@@ -1,169 +1,290 @@
+/* Apply box-sizing globally */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+
 /* General Layout */
-.hr-admin-portal {
+.page-layout {
   display: flex;
   flex-direction: column;
-  background-color: rgb(229, 231, 230); /* Light background color */
-  min-height: 100vh; /* Full height of the viewport */
-  width: 100vw; /* Full width of the viewport */
-  box-sizing: border-box;
+  min-height: 100vh; /* Full viewport height */
 }
 
-/* Main Header Styling */
-.main-header {
+
+/* Header Styling */
+.header {
   display: flex;
   align-items: center;
-  background-color: rgb(52, 106, 134); /* Branding primary color */
+  background-color: #346a86;
   color: white;
-  padding: 20px;
-  width: 100%;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
+  padding: 20px 20px; /* Consistent padding */
   width: 100%;
 }
 
 .header-logo {
-  width: 100px;
-  height: auto;
+  width: 75px;
   margin-right: 20px;
 }
 
-.header-content h1 {
-  font-family: 'GT Walsheim', sans-serif;
-  font-size: 2rem;
+.header-title {
+  font-size: 1.5rem;
   margin: 0;
-  color: #ffffff;
 }
 
-/* Content Container for Equal Width Distribution with Top Alignment */
-.content-container {
-  display: flex;
-  justify-content: flex-start; /* Align content towards the top */
-  align-items: flex-start; /* Ensure both sections are aligned at the top */
-  gap: 40px; /* Space between the two sections */
-  width: 100%;
-  height: 100%; /* Full height of the available viewport */
+
+/* Main Content Styling */
+.main-content {
+  flex: 1; /* Take up remaining space */
   padding: 20px;
-  box-sizing: border-box;
+  background-color: #e5e7e6;
+  overflow-y: auto; /* Scroll if content overflows */
 }
 
-/* Left Side: File Upload Section */
-.upload-section {
-  flex-grow: 1; /* Ensure equal distribution */
-  max-width: 50%; /* Set max width to 50% */
+
+/* Content Wrapper Styling */
+.content-wrapper {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align the content to the top */
-}
-
-/* Reverted Drag-and-Drop Styling */
-.file-drop-zone {
-  background-color: white;
-  border: 2px dashed rgb(52, 106, 134); /* Dashed border with primary color */
-  padding: 50px;
-  width: 100%;
-  max-width: 500px;
-  text-align: center;
-  transition: background-color 0.3s ease;
-  cursor: pointer;
-  border-radius: 8px;
-}
-
-.file-drop-zone.dragging {
-  background-color: rgba(52, 106, 134, 0.1); /* Light tint when dragging */
-}
-
-.file-drop-zone p {
-  font-family: 'GT Walsheim', sans-serif;
-  color: rgb(52, 106, 134);
-}
-
-.file-drop-zone .upload-link {
-  color: rgb(52, 106, 134);
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* Modern Cards for File Info */
-.modern-card {
-  background-color: rgb(229, 231, 230);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-/* Modernized Banner Announcements */
-.announcements-section {
-  flex-grow: 1; /* Ensure equal distribution */
-  max-width: 50%; /* Set max width to 50% */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start; /* Align content to the top */
-  align-items: flex-start; /* Horizontally align to the left */
-}
-
-.announcement-cards {
-  display: flex;
-  flex-direction: column;
   gap: 20px;
-  width: 100%; /* Full width */
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
-.announcement-card {
-  background-color: rgb(229, 231, 230); /* Light background */
-  padding: 20px;
+.header,
+.footer {
+  width: 100%;
+}
+
+
+/* Drag & Drop Styling */
+.drag-drop-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.drag-drop-area {
+  flex: 1;
+  min-width: 300px;
+  border: 2px dashed #346a86;
   border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Modern shadow */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add smooth transitions */
-  border-left: 4px solid rgb(52, 106, 134); /* Left border for a modern accent */
+  padding: 40px 20px;
+  text-align: center;
+  transition: background-color 0.3s, border-color 0.3s;
+  background-color: #f9f9f9;
+  color: #346a86;
+  cursor: pointer;
 }
 
-.announcement-card:hover {
-  transform: translateY(-5px); /* Lift on hover */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Increase shadow on hover */
+.drag-drop-area.dragging {
+  background-color: rgba(52, 106, 134, 0.1);
+  border-color: #274e63;
 }
 
-input[type="text"] {
+.drag-drop-area p {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.file-list {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.file-list h4 {
+  margin-bottom: 10px;
+  color: #274e63;
+}
+
+.file-list ul {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.file-list li {
+  margin-bottom: 5px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.remove-button {
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.remove-button:hover {
+  color: #d9363e;
+}
+
+
+/* Upload Button Styling */
+.upload-button {
   width: 100%;
   padding: 12px;
-  font-size: 1rem;
-  border: 1px solid rgb(52, 106, 134); /* Border with primary color */
+  background-color: #346a86;
+  color: #ffffff;
+  border: none;
   border-radius: 4px;
-  transition: border-color 0.3s ease;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-input[type="text"]:focus {
-  border-color: rgb(52, 106, 134);
+.upload-button:hover {
+  background-color: #274e63;
+}
+
+
+/* Announcements Form Styling */
+.announcements-form {
+  flex: 1;
+  min-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 30px 20px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.announcements-form h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #346a86;
+  text-align: center;
+  font-size: 1.2rem;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+  border-color: #346a86;
   outline: none;
 }
 
-/* Upload Button Beneath Datepicker */
-.modern-button {
-  background-color: rgb(52, 106, 134);
-  color: white;
-  padding: 12px 24px;
+.announcements-form button {
+  width: 100%;
+  padding: 12px;
+  background-color: #346a86;
+  color: #ffffff;
   border: none;
   border-radius: 4px;
+  font-size: 1rem;
   cursor: pointer;
-  font-family: 'GT Walsheim', sans-serif;
-  font-size: 1rem;
-  margin-top: 10px; /* Add margin above the upload button */
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
 
-.modern-button:hover {
-  background-color: rgb(35, 21, 32); /* Darker shade for hover */
+.announcements-form button:hover {
+  background-color: #274e63;
 }
 
-/* Confirmation Message */
-.confirmation-message {
-  color: green;
-  margin-top: 15px;
-  font-size: 1rem;
-  font-family: 'GT Walsheim', sans-serif;
+
+/* Footer Styles */
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #346a86;
+  color: white;
+  padding: 20px 20px; /* Match header padding */
+  width: 100%;
+}
+
+.footer-left, .footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.footer-left .tooltip-container {
+  margin-right: 4px;
+}
+
+.footer-right a {
+  margin-right: 6px;
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-right span {
+  color: white;
+}
+
+
+/* Tooltip Styles */
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 110%;
+  left: 0;
+  padding: 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  z-index: 10;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.9);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .drag-drop-area, .announcements-form {
+    min-width: 100%;
+  }
+  
+  .content-wrapper {
+    flex-direction: column;
+    gap: 15px;
+  }
 }

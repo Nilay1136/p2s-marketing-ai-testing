@@ -1,170 +1,213 @@
 import React, { useState } from 'react';
 import './App.css';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
-import headerLogo from './P2S_Legence_Logo_White.png'; 
- 
+import headerLogo from './P2S_Legence_Logo_White.png';
 
-// Main Header Component
-const MainHeader = ({ title, imageSrc }) => {
+// Header Component
+const Header = () => {
   return (
-    <header className="main-header">
-      <div className="header-content">
-        {imageSrc && <img src={imageSrc} alt="Header Logo" className={headerLogo}/>}
-        <h1>{title}</h1>
-      </div>
+    <header className="header">
+      <img src={headerLogo} alt="Logo" className="header-logo" />
+      <h1 className="header-title">Admin Portal: Human Resources</h1>
     </header>
   );
 };
 
-// File Upload Component
-const FileUpload = ({ onFileUpload }) => {
-  const [dragging, setDragging] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState([]);
+// Main Content Component
+const MainContent = () => {
+  return (
+    <main className="main-content">
+      <div className="content-wrapper">
+        <DragAndDrop />
+        <AnnouncementsForm />
+      </div>
+    </main>
+  );
+};
 
-  const handleDragOver = (e) => {
+// Drag and Drop Component
+const DragAndDrop = () => {
+  const [dragging, setDragging] = useState(false);
+  const [files, setFiles] = useState([]);
+
+  const handleDragEnter = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragging(true);
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setDragging(false);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragging(false);
-    const files = e.dataTransfer.files;
-    setSelectedFiles(files);
-    onFileUpload(files);
+
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    setFiles((prevFiles) => [...prevFiles, ...droppedFiles]);
   };
 
-  const handleFileSelect = (e) => {
-    const files = e.target.files;
-    setSelectedFiles(files);
-    onFileUpload(files);
+  const handleRemoveFile = (index) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = () => {
+    if (files.length === 0) {
+      alert('No files to upload.');
+      return;
+    }
+
+    // Implement upload logic here on what to do with the files
+    console.log('Uploading files:', files);
+
+    setFiles([]);
+    alert('Files have been uploaded successfully.');
   };
 
   return (
-    <div className="file-upload-section">
+    <div className="drag-drop-container">
       <div
-        className={`file-drop-zone ${dragging ? 'dragging' : ''}`}
-        onDragOver={handleDragOver}
+        className={`drag-drop-area ${dragging ? 'dragging' : ''}`}
+        onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onClick={() => document.getElementById('fileInput').click()}
       >
-        <p>Drag & Drop files here or <span className="upload-link">browse</span></p>
-        <input
-          type="file"
-          id="fileInput"
-          multiple
-          onChange={handleFileSelect}
-          style={{ display: 'none' }}
-        />
+        <p>Drag & Drop files here</p>
+        {files.length > 0 && (
+          <div className="file-list">
+            <h4>Files:</h4>
+            <ul>
+              {files.map((file, index) => (
+                <li key={index}>
+                  {file.name}
+                  <button
+                    type="button"
+                    className="remove-button"
+                    onClick={() => handleRemoveFile(index)}
+                  >
+                    &times;
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
+      {files.length > 0 && (
+        <button type="button" className="upload-button" onClick={handleUpload}>
+          Upload
+        </button>
+      )}
     </div>
   );
 };
 
-// Main HR Admin Portal Component
-const HRAdminPortal = () => {
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [expirationDates, setExpirationDates] = useState({});
-  const [announcements, setAnnouncements] = useState(Array(5).fill(''));
-  const [confirmationMessage, setConfirmationMessage] = useState('');
+// Announcements Form Component
+const AnnouncementsForm = () => {
+  const [formData, setFormData] = useState({
+    announcement1: '',
+    announcement2: '',
+    announcement3: '',
+    announcement4: '',
+    announcement5: '',
+  });
 
-  const handleFileUpload = (files) => {
-    const fileList = Array.from(files).map((file) => ({
-      name: file.name,
-      size: file.size,
-    }));
-    setUploadedFiles(fileList);
-  };
-
-  const handleExpirationDateChange = (fileName, date) => {
-    setExpirationDates((prevDates) => ({
-      ...prevDates,
-      [fileName]: date,
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
     }));
   };
 
-  const handleUpload = (file) => {
-    // Simulate the file upload action
-    console.log('Uploading file:', file.name);
-  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Store announcements in a variable (e.g., submittedData)
+    const submittedData = { ...formData };
+    console.log('Form submitted:', submittedData);
 
-  const handleAnnouncementChange = (index, value) => {
-    const updatedAnnouncements = [...announcements];
-    updatedAnnouncements[index] = value;
-    setAnnouncements(updatedAnnouncements);
-  };
+    // Display confirmation message using alert
+    alert('Announcements have been successfully submitted.');
 
-  const saveAnnouncements = async () => {
-    // Simulate a backend call with a delay
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve('Saved successfully');
-      }, 1000);
+    // Optionally, reset form fields
+    setFormData({
+      announcement1: '',
+      announcement2: '',
+      announcement3: '',
+      announcement4: '',
+      announcement5: '',
     });
   };
 
-  const handleSave = async () => {
-    setConfirmationMessage('Saving...');
-    await saveAnnouncements();
-    setConfirmationMessage('Announcements saved successfully!');
-  };
+  return (
+    <form className="announcements-form" onSubmit={handleSubmit}>
+      <h3>Announcements</h3>
+      {Object.keys(formData).map((key, index) => (
+        <div key={index} className="form-group">
+          <label htmlFor={key}>Message {index + 1}:</label>
+          <input
+            type="text"
+            id={key}
+            name={key}
+            value={formData[key]}
+            onChange={handleChange}
+          />
+        </div>
+      ))}
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
+// Footer Component
+const Footer = () => {
+  const [showAboutTooltip, setShowAboutTooltip] = useState(false);
 
   return (
-    <div className="hr-admin-portal">
-      <MainHeader title="HR Admin Portal" imageSrc={headerLogo} />
-
-      <div className="content-container">
-        {/* Left side: Drag and Drop */}
-        <div className="upload-section">
-          <FileUpload onFileUpload={handleFileUpload} />
-          <div className="uploaded-files">
-            {uploadedFiles.map((file) => (
-              <div key={file.name} className="file-info modern-card">
-                <p>{file.name}</p>
-                <div className="expiration-date">
-                  <p>Set Expiration Date:</p>
-                  <DatePicker
-                    selected={expirationDates[file.name]}
-                    onChange={(date) => handleExpirationDateChange(file.name, date)}
-                  />
-                </div>
-                <button className="modern-button" onClick={() => handleUpload(file)}>
-                  Upload {file.name}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Right side: Banner Announcements */}
-        <div className="announcements-section">
-          <h2>Banner Announcements</h2>
-          <div className="announcement-cards">
-            {announcements.map((announcement, index) => (
-              <div key={index} className="modern-card announcement-card">
-                <input
-                  type="text"
-                  value={announcement}
-                  onChange={(e) => handleAnnouncementChange(index, e.target.value)}
-                  placeholder={`Announcement ${index + 1}`}
-                />
-              </div>
-            ))}
-          </div>
-          <div className="confirmation-message">{confirmationMessage}</div>
-          <button className="modern-button" onClick={handleSave}>
-            Save
-          </button>
+    <footer className="footer">
+      <div className="footer-left">
+        <div
+          className="tooltip-container"
+          onMouseEnter={() => setShowAboutTooltip(true)}
+          onMouseLeave={() => setShowAboutTooltip(false)}
+        >
+          <span className="footer-text">About</span>
+          {showAboutTooltip && (
+            <div className="tooltip">
+              Our P2S AI Assistant was developed by Nilay Nagar, Chad Peterson, and Jonathan Herrera.
+            </div>
+          )}
         </div>
       </div>
+
+      <div className="footer-right">
+        <a href="https://www.p2sinc.com" target="_blank" rel="noopener noreferrer">
+          www.p2sinc.com
+        </a>
+        <span> | © {new Date().getFullYear()} P2S All rights reserved.</span>
+      </div>
+    </footer>
+  );
+};
+
+// Page Layout Component
+const PageLayout = () => {
+  return (
+    <div className="page-layout">
+      <Header />
+      <MainContent />
+      <Footer />
     </div>
   );
 };
 
-export default HRAdminPortal;
+export default PageLayout;
