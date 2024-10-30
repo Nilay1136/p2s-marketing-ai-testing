@@ -34,24 +34,89 @@ const DepartmentList = ({ isVisible, toggleDepartmentList, handleDepartmentSelec
 
 // Banner Component to display announcements and events
 const Banner = ({ announcements }) => {
-  const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
+  const bannerTextRef = useRef(null);
+  const [animationDuration, setAnimationDuration] = useState(0);
 
-  // Rotate through announcements every 5 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
-    }, 5000);
-    return () => clearInterval(interval);
+    const updateAnimationDuration = () => {
+      const bannerTextElement = bannerTextRef.current;
+      const bannerWrapper = document.querySelector('.banner-text-wrapper');
+
+      if (bannerTextElement && bannerWrapper) {
+        // const textWidth = bannerTextElement.offsetWidth;
+        // const wrapperWidth = bannerWrapper.offsetWidth;
+        // const scrollSpeed = 65; // Adjust this value to set the speed (pixels per second)
+        // setAnimationDuration((textWidth + wrapperWidth) / scrollSpeed);
+        setAnimationDuration(150); // Set a fixed duration for the animation
+      }
+    };
+
+    updateAnimationDuration();
+    window.addEventListener('resize', updateAnimationDuration);
+
+    return () => {
+      window.removeEventListener('resize', updateAnimationDuration);
+    };
   }, [announcements]);
 
-  if (!announcements.length) {
-    return null; // No announcements to display
-  }
+  const combinedAnnouncments = announcements.join(" ~~~●~~~ "); // Combine all announcements for animation
 
   return (
     <div className="banner">
-      <p>{announcements[currentAnnouncement]}</p>
+      <div className="banner-text-wrapper">
+        <span 
+          className="banner-text"
+          ref={bannerTextRef}
+          style={{ animationDuration: `${animationDuration}s` }}
+          dangerouslySetInnerHTML={{ __html: combinedAnnouncments}}
+        ></span>
+      </div>
     </div>
+  ); 
+};
+
+const Footer = () => {
+  const [showAboutTooltip, setShowAboutTooltip] = useState(false);
+  const [showDisclaimerTooltip, setShowDisclaimerTooltip] = useState(false);
+
+  return (
+    <footer className="footer">
+      <div className="footer-left">
+        <div 
+          className="tooltip-container" 
+          onMouseEnter={() => setShowAboutTooltip(true)} 
+          onMouseLeave={() => setShowAboutTooltip(false)}
+        >
+          <span className="footer-text">About</span>
+          {showAboutTooltip && (
+            <div className="tooltip">
+              Our P2S AI Assistant was developed by Nilay Nagar, Chad Peterson, and Jonathan Herrera.
+            </div>
+          )}
+        </div>
+
+        <div 
+          className="tooltip-container" 
+          onMouseEnter={() => setShowDisclaimerTooltip(true)} 
+          onMouseLeave={() => setShowDisclaimerTooltip(false)}
+        >
+          <span className="footer-text"> | Disclaimer</span>
+          {showDisclaimerTooltip && (
+            <div className="tooltip">
+              AI-generated responses may not always be accurate. 
+              Verify information before making decisions.
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="footer-right">
+        <a href="https://www.p2sinc.com" target="_blank" rel="noopener noreferrer">
+          www.p2sinc.com
+        </a>
+        <span> | © {new Date().getFullYear()} P2S All rights reserved.</span>
+      </div>
+    </footer>
   );
 };
 
@@ -68,9 +133,10 @@ function App() {
 
   const [announcements] = useState([
     'Benefits Open Enrollment is Monday, Nov. 4, through Friday, Nov. 15.',
-    'The company holiday party is scheduled for Friday, Dec. 20, at 6 PM.',
-    'The annual performance review period is from Monday, Jan. 6, through Friday, Jan. 17.',
-    'The office will be closed on Friday, July 3, in observance of Independence Day.',
+    'Upcoming Company Holidays: November 28-29 & December 24, 2024-January 1, 2025.',
+    'P2S 2025 Payroll and Holiday Calendar is available on the Intranet > HR > HR Toolbox.',
+    'FSA Reminder: You have until December 31 to incur eligible expenses for the 2024 plan year. Unused funds (up to $610) in your Healthcare FSA will roll over to the next plan year. Any amount over $610 will be forfeited.',
+    'Update your Employee Information (Address Changes): To ensure you receive end-of-year tax and benefit information, please confirm that your address and other personal details are accurate in <a href="https://access.paylocity.com/">Paylocity</a>.',
     'Don\'t forget to fill out your timecards at the end of each day.',
   ]);
 
@@ -80,37 +146,32 @@ function App() {
   const [isDepartmentListVisible, setIsDepartmentListVisible] = useState(false);
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('Select an AI Assistant');
+  const [isRightPanelVisible, setIsRightPanelVisible] = useState(false); // State for right panel visibility
   const [editMode, setEditMode] = useState({});
 
   const chatHistoryRef = useRef(null); // Reference to chat history
 
-  // Scroll to the bottom of the chat history when a new message is added
   useEffect(() => {
     if (chatHistoryRef.current) {
       chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
     }
-  }, [conversations, isTyping]); // Scroll when conversations or typing state changes
+  }, [conversations, isTyping]);
 
-  // Toggle the department dropdown visibility
   const toggleDepartmentList = () => {
     setIsDepartmentListVisible(!isDepartmentListVisible);
   };
 
-  // Handle department selection
   const handleDepartmentSelection = (department) => {
     setSelectedDepartment(department);
     setIsDepartmentListVisible(false);
 
-    // Create a casual bot message after department selection
     const departmentBotMessage = {
       sender: 'AI Assistant',
-      text: `You've chosen the ${department} AI Assistant! I’ll be answering your questions using information from our ${department} knowledge base.`
-      + ` How can I help you today?`,
+      text: `You've chosen the ${department} AI Assistant! I’ll be answering your questions using information from our ${department} knowledge base. How can I help you today?`,
       timestamp: new Date().toLocaleString(),
       rating: null,
     };
 
-    // Append the bot message to the conversation
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
         conversation.id === activeConversationId
@@ -120,7 +181,6 @@ function App() {
     );
   };
 
-  // Function to handle adding a new conversation
   const handleAddConversation = () => {
     if (conversations.length < 10) {
       const newConversation = {
@@ -135,17 +195,15 @@ function App() {
     }
   };
 
-  // Function to handle editing a conversation name
   const handleEditConversationName = (id, newName) => {
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
         conversation.id === id ? { ...conversation, name: newName } : conversation
       )
     );
-    setEditMode((prevEditMode) => ({ ...prevEditMode, [id]: false })); // Turn off edit mode after saving
+    setEditMode((prevEditMode) => ({ ...prevEditMode, [id]: false })); 
   };
 
-  // Function to toggle edit mode for a conversation
   const toggleEditMode = (id) => {
     setEditMode((prevEditMode) => ({
       ...prevEditMode,
@@ -153,7 +211,6 @@ function App() {
     }));
   };
 
-  // Function to handle sending messages
   const handleSendMessage = () => {
     if (userInput.trim() === '') return;
 
@@ -167,6 +224,13 @@ function App() {
       )
     );
 
+    // Check for 'proposal' to show the right panel and 'hide display area' to hide it
+    if (userInput.toLowerCase().includes('proposal')) {
+      setIsRightPanelVisible(true);  // Show the right panel
+    } else if (userInput.toLowerCase().includes('hide display area')) {
+      setIsRightPanelVisible(false); // Hide the right panel if "hide display area" is typed
+    }
+
     setUserInput('');
     setIsTyping(true);
 
@@ -175,7 +239,7 @@ function App() {
         sender: 'AI Assistant',
         text: `This is a response from the ${selectedDepartment} AI Assistant.`,
         timestamp: new Date().toLocaleString(),
-        rating: null, // Add initial null rating
+        rating: null, 
       };
 
       setConversations((prevConversations) =>
@@ -189,7 +253,6 @@ function App() {
     }, 2000);
   };
 
-  // Handle rating a bot response
   const handleRateMessage = (conversationId, messageIndex, rating) => {
     setConversations((prevConversations) =>
       prevConversations.map((conversation) =>
@@ -205,7 +268,6 @@ function App() {
     );
   };
 
-  // Function to toggle the left panel collapse
   const toggleLeftPanel = () => {
     setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
   };
@@ -216,11 +278,9 @@ function App() {
 
   return (
     <div className="app">
-      {/* Main Header */}
       <header className="main-header">
         <CircularLogo isBotMessage={false} />
         <h1>{selectedDepartment}</h1>
-        {/* Render Department List Component */}
         <DepartmentList
           isVisible={isDepartmentListVisible}
           toggleDepartmentList={toggleDepartmentList}
@@ -228,14 +288,10 @@ function App() {
         />
       </header>
 
-      {/* Banner for Announcements */}
       <Banner announcements={announcements} />
 
-      {/* Main Body Content */}
       <div className="main-body">
-        {/* Left Sidebar (History) */}
         <div className={`left-panel ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
-          {/* History Header */}
           <div className="history-header">
             <h3 className={`history-title ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
               History
@@ -245,7 +301,6 @@ function App() {
             </div>
           </div>
 
-          {/* Conversation List and Add Button */}
           {!isLeftPanelCollapsed && (
             <>
               <ul>
@@ -284,23 +339,19 @@ function App() {
                   </li>
                 ))}
               </ul>
-              <button
-                className="add-conversation-button"
-                onClick={handleAddConversation}
-              >
+              <button className="add-conversation-button" onClick={handleAddConversation}>
                 <FaPlus /> Add Conversation
               </button>
             </>
           )}
         </div>
 
-        {/* Chat Input Section */}
         <div className="chat-panel">
           <div className="chat-history" ref={chatHistoryRef}>
             {activeConversation?.messages.map((msg, index) => (
               <div key={index} className="message-row">
                 {msg.sender === 'AI Assistant' && (
-                  <CircularLogo isBotMessage style={{ transform: 'scale(0.5)' }} />
+                  <CircularLogo isBotMessage={true} style={{ transform: 'scale(0.5)' }} />
                 )}
                 <div
                   className={`message ${
@@ -346,6 +397,17 @@ function App() {
             </button>
           </div>
         </div>
+
+        {isRightPanelVisible && (
+          <div className="right-panel">
+            <h3>Proposal Details</h3>
+            <p>Here you can find information related to the proposal process.</p>
+          </div>
+        )}
+      </div>
+
+      <div className="footer-panel">
+          <Footer />
       </div>
     </div>
   );

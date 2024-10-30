@@ -246,9 +246,9 @@
   border: 2px solid white; /* White outline */
 }
 
-/* For bot messages: Scale down logo by 50% */
+/* For bot messages: Scale down logo by 75% */
 .bot-logo {
-  transform: scale(0.5); /* Scale down logo */
+  transform: scale(0.75); /* Scale down logo */
 }
 
 /* Timestamp */
@@ -437,18 +437,170 @@
   background-color: rgb(35, 21, 32);
 }
 
+/* Banner Styles */
 .banner {
   background-color: rgb(52, 106, 134); /* Blue banner */
   color: white; /* Text color */
-  padding: 6px;
-  font-size: 1.1rem;
-  font-family: 'GT Walsheim Regular', sans-serif;
-  position: sticky;
-  top: 0;
-  width: 100%;
-  height: 25px;
+  padding: 6px; /* Padding inside the banner */
+  font-size: 1.1rem; /* Larger font size */
+  font-family: 'GT Walsheim Regular', sans-serif; /* Use custom font */
+  position: sticky; /* Stick to the top */
+  top: 0; /* Stick to the top */
+  /* width: 100%; Full width */
+  min-height: 25px; /* Flexible height for larger text */
   z-index: 10; /* Ensure it stays on top */
   display: flex; /* Use flexbox for vertical alignment */
   align-items: center; /* Center items vertically */
+  justify-content: space-between; /* Space between items */
+  overflow: hidden; /* Hide overflow */
+}
+
+/* Banner Text Styles */
+.banner-text-wrapper {
+  display: flex; /* Use flexbox for alignment */
   justify-content: center; /* Center items horizontally */
+  align-items: center; /* Center items vertically */
+  flex: 1; /* Take up remaining space */
+  white-space: nowrap; /* Prevent text wrapping */
+  position: relative; /* Position relative for absolute children */
+}
+
+/* Banner Text Animation Styles */
+.banner-text {
+  display: inline-block; /* Display as inline block */
+  white-space: nowrap; /* Prevent text from wrapping */
+  will-change: transform; /* Optimize for animation */
+}
+
+/* Banner Text Link Styles */
+.banner-text a {
+  color: white; /* Make hyperlinks white */
+  text-decoration: underline; /* Underline the links */
+}
+
+/* Banner Text Link Hover Styles */
+.banner-text a:hover {
+  color: #e0e0e0;
+}
+
+/* Animation for scrolling long text */
+.banner-text-wrapper .banner-text {
+  animation: scroll-text linear infinite; /* Continuous scroll animation */
+  animation-play-state: running; /* Default running */
+}
+
+/* Pause animation on hover */
+.banner-text-wrapper:hover .banner-text {
+  animation-play-state: paused; /* Pause animation on hover */
+}
+
+@keyframes scroll-text {
+  0% {
+    transform: translateX(100%); /* Start outside of view */
+  }
+  100% {
+    transform: translateX(-100%); /* Move text out of view */
+  }
+}
+
+/* Footer Styles */
+.footer-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgb(52, 106, 134);
+  color: white;
+  padding: 10px;
+  font-family: 'GT Walsheim', sans-serif;
+  font-size: 0.9rem;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.footer-left, .footer-right {
+  display: flex;
+  align-items: center;
+}
+
+.footer-left .tooltip-container {
+  margin-right: 4px; /* Space between About and Disclaimer */
+}
+
+.footer-right a {
+  margin-right: 6px; /* Space between link and text */
+  color: white;
+  text-decoration: underline;
+}
+
+.footer-right span {
+  color: white;
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+  position: relative;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 110%; /* Position tooltip above the label */
+  left: 0; /* Align to the left edge of the label */
+  padding: 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  z-index: 10;
+  text-align: left; 
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background-color: rgba(0, 0, 0, 0.9); 
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; /* Position below the tooltip */
+  left: 2%;
+  transform: translateX(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: rgba(0, 0, 0, 0.85) transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Right Panel Styles */
+.right-panel {
+  width: 300px;
+  background-color: rgb(229, 231, 230);
+  color: rgb(52, 106, 134);
+  padding: 20px;
+  border-left: 1px solid rgb(52, 106, 134);
+  box-shadow: -4px 0px 8px rgba(29, 26, 26, 0.1);
+  flex-shrink: 0; /* Prevent shrinking */
+  overflow-y: auto;
+  transition: transform 0.3s ease;
+}
+
+.right-panel h3 {
+  color: rgb(35, 21, 32);
+  margin-bottom: 10px;
+}
+
+.right-panel p {
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
