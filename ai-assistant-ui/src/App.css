@@ -1,4 +1,16 @@
+/* Global Styles and Resets */
+*, *::before, *::after {
+  box-sizing: border-box; /* Ensures padding and borders are included within the element's total width and height */
+}
 /* General Layout */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  font-family: 'GT Walsheim', sans-serif; /* Moved font-family here for consistency */
+}
+
 .app {
   display: flex;
   flex-direction: column;
@@ -8,18 +20,125 @@
   overflow: hidden;
 }
 
-/* Main Header */
+
+/* Main Header Layout */
 .main-header {
-  width: 100%; /* Full width */
-  background-color: rgb(229, 231, 230); /* Light background for header */
+  width: 100%;
+  background-color: rgb(229, 231, 230);
+  padding: 15px 20px;
+  min-height: 80px;
   display: flex;
   align-items: center;
-  padding: 15px;
-  gap: 20px; /* Space between logo and text */
+  justify-content: space-between;
+}
+
+/* Left section with logo and titles */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Title stack styles */
+.title-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.welcome-text {
+  font-size: 16px;
+  color: rgb(52, 106, 134);
+  margin: 0;
+  font-weight: normal;
+}
+
+.department-title {
+  font-size: 24px;
   color: rgb(35, 21, 32);
-  height: 80px;
-  justify-content: flex-start; /* Left-align header content */
-  font-family: 'GT Walsheim', sans-serif;
+  margin: 0;
+  font-weight: bold;
+}
+
+/* Right section for controls and logout */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 25px; /* Space between department dropdown and logout */
+}
+
+/* Department dropdown styles */
+.department-dropdown {
+  position: relative;
+  z-index: 20;
+}
+
+.department-button {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 8px 12px;
+  border: solid;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px; /* Match logout button height */
+  gap: 20px;
+}
+
+.department-button:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+.department-list {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  width: 200px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(29, 26, 26, 0.1);
+  z-index: 30;
+  opacity: 0;
+  height: 0;
+  overflow: hidden;
+  transition: height 0.6s ease, opacity 0.4s ease 0.2s;
+}
+
+.department-list.expanded {
+  opacity: 1;
+  height: 190px;
+}
+
+.department-list li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.department-list li:hover {
+  background-color: rgb(35, 21, 32);
+}
+
+/* Logout button styles */
+.logout-button {
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #e74144;
+  color: white;
+  border: solid;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
+  height: 35px; /* Match department button height */
 }
 
 /* Main Body */
@@ -35,9 +154,11 @@
   width: 200px;
   background-color: rgb(229, 231, 230);
   color: rgb(52, 106, 134);
-  padding: 10px;
+  padding: 15px;
+  border-right: 1px solid rgb(52, 106, 134);
   flex-shrink: 0; /* Fixed width for sidebar */
   overflow-y: auto; /* Enable vertical scrolling */
+  box-shadow: black;
   transition: width 1.5s ease; /* Add smooth transition for width */
 }
 
@@ -127,9 +248,25 @@
 }
 
 .edit-button:hover {
-  color: rgb(35, 21, 32);
+  opacity: 0.8;
 }
 
+.delete-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.delete-button:hover {
+  opacity: 0.8;
+}
+
+/* Add Conversation Button */
 .add-conversation-button {
   margin-top: 10px;
   background-color: rgb(52, 106, 134);
@@ -190,18 +327,17 @@
   align-self: flex-start;
   margin-right: auto;
   background-color: rgb(52, 106, 134);
+  color:white;
   border-radius: 0px 12px 12px 12px;
 }
 
-/* User message timestamp in grey */
-.user-message .timestamp {
-  color: rgb(150, 150, 150);
+/* Timestamp */
+.timestamp {
+  font-size: 0.75rem;
+  color: rgb(233, 211, 211);
+  margin-top: 5px;
 }
 
-/* Bot message timestamp in white */
-.bot-message .timestamp {
-  color: white;
-}
 
 /* Align rating to the bottom right corner of the bot message */
 .bot-message .rating {
@@ -267,18 +403,78 @@
   justify-content: flex-end; /* Align to the right */
 }
 
-.thumbs-up, .thumbs-down {
-  cursor: pointer;
+.rating span {
+  margin-right: 8px;
+  font-size: 14px;
+  color: #ccc;
 }
 
-.thumbs-up.selected, .thumbs-down.selected {
+.thumbs-up,
+.thumbs-down {
+  cursor: pointer;
+  margin-right: 8px;
+  font-size: 20px;
+  color: #ccc;
+  transition: color 0.3s;
+}
+
+.thumbs-up:hover {
+  color: #4caf50; /* Green */
+}
+
+.thumbs-down:hover {
+  color: #f44336; /* Red */
+}
+
+.thumbs-up.selected,
+.thumbs-down.selected {
   color: black; /* Change the selected color to black */
 }
 
-.thumbs-up:hover, .thumbs-down:hover {
+.thumbs-up:hover,
+.thumbs-down:hover {
   opacity: 0.7;
 }
 
+/* Feedback Form */
+.feedback-form {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.feedback-form textarea {
+  resize: vertical;
+  min-height: 60px;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.feedback-form button {
+  align-self: flex-end;
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.feedback-form button:hover {
+  background-color: #1565c0;
+}
+
+/* Feedback Confirmation */
+.feedback-confirmation {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #4caf50;
+}
 
 /* Typing Indicator */
 .typing-indicator {
@@ -376,66 +572,7 @@
   background-color: rgb(35, 21, 32); /* Darker color on hover */
 }
 
-/* Department Button */
-.department-dropdown {
-  position: absolute; /* Position over content */
-  top: 15px;
-  right: 15px;
-  z-index: 20; /* Ensure it overlays other UI components */
-}
 
-.department-button {
-  background-color: rgb(52, 106, 134);
-  color: rgb(229, 231, 230);
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.department-button:hover {
-  background-color: rgb(35, 21, 32);
-}
-
-.department-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  background-color: rgb(52, 106, 134);
-  color: rgb(229, 231, 230);
-  position: absolute;
-  top: 35px;
-  right: 0;
-  width: 200px;
-  border-radius: 5px;
-  z-index: 10;
-  box-shadow: 0 4px 8px rgba(29, 26, 26, 0.1);
-  opacity: 0; /* Hidden state */
-  height: 0; /* Collapsed state */
-  overflow: hidden; /* Hide content when collapsed */
-  /*transition: opacity 0.4s ease, height 1s ease; /* Smooth fade and height transition */
-  transition: height 0.6s ease, opacity 0.4s ease 0.2s, transform 0.6s ease; /* Add delay for opacity */
-
-}
-
-.department-list.expanded {
-  opacity: 1; /* Fully visible */
-  height: 190px; /* Expand to fit content */
-  transform: translateY(0); /* Move into position */
-}
-
-.department-list li {
-  padding: 10px;
-  cursor: pointer;
-  /* text-transform: uppercase; */
-}
-
-.department-list li:hover {
-  background-color: rgb(35, 21, 32);
-}
 
 /* Banner Styles */
 .banner {
@@ -453,6 +590,7 @@
   align-items: center; /* Center items vertically */
   justify-content: space-between; /* Space between items */
   overflow: hidden; /* Hide overflow */
+  border: 2px solid  rgb(229, 231, 230);;
 }
 
 /* Banner Text Styles */
@@ -582,25 +720,75 @@
   opacity: 1;
 }
 
-/* Right Panel Styles */
-.right-panel {
-  width: 300px;
-  background-color: rgb(229, 231, 230);
-  color: rgb(52, 106, 134);
-  padding: 20px;
-  border-left: 1px solid rgb(52, 106, 134);
-  box-shadow: -4px 0px 8px rgba(29, 26, 26, 0.1);
-  flex-shrink: 0; /* Prevent shrinking */
-  overflow-y: auto;
-  transition: transform 0.3s ease;
+
+/* Additional Message Styles */
+.message th,
+.message td {
+  border: 1px solid #dee2e6;
+  padding: 8px;
+  text-align: left;
 }
 
-.right-panel h3 {
-  color: rgb(35, 21, 32);
-  margin-bottom: 10px;
+.message th {
+  background-color: black; /* Black header for tables */
+  color: rgb(52, 106, 134); /* White text for better contrast */
 }
 
-.right-panel p {
-  font-size: 0.9rem;
-  line-height: 1.5;
+.message a {
+  color: white;
+  text-decoration: none;
+}
+
+.message a:hover {
+  text-decoration: underline;
+}
+
+.message strong {
+  font-weight: bold;
+}
+/* Add these to your App.css */
+.message-sources {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.9em;
+}
+
+.sources-header {
+  font-weight: 600;
+  color: #f9f6f6;
+  margin-bottom: 4px;
+}
+
+.sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.source-item {
+  margin: 4px 0;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.source-document {
+  font-weight: 500;
+}
+
+.source-page {
+  color: white;
+}
+
+.source-link {
+  color: white;
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.source-link:hover {
+  text-decoration: underline;
 }
