@@ -1,0 +1,270 @@
+/* Uploaded Files Container */
+.uploaded-files-container {
+  background-color: rgb(229, 231, 230);
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.uploaded-files-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: rgba(52, 106, 134, 0.1);
+  border-bottom: 1px solid rgba(52, 106, 134, 0.2);
+}
+
+.uploaded-files-header h4 {
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.expand-toggle {
+  background: transparent;
+  border: none;
+  color: rgb(52, 106, 134);
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.expand-toggle:hover {
+  background-color: rgba(52, 106, 134, 0.1);
+  color: rgb(35, 21, 32);
+}
+
+/* Files List */
+.uploaded-files-list {
+  padding: 8px;
+}
+
+.uploaded-file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  background-color: rgba(52, 106, 134, 0.05);
+  border: 1px solid rgba(52, 106, 134, 0.1);
+  transition: all 0.2s ease;
+}
+
+.uploaded-file-item:last-child {
+  margin-bottom: 0;
+}
+
+.uploaded-file-item:hover {
+  background-color: rgba(52, 106, 134, 0.1);
+  border-color: rgba(52, 106, 134, 0.2);
+}
+
+/* File Info Section */
+.file-info-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.file-icon {
+  font-size: 18px;
+}
+
+.file-icon.pdf {
+  color: #d32f2f;
+}
+
+.file-icon.word {
+  color: #1976d2;
+}
+
+.file-icon.excel {
+  color: #388e3c;
+}
+
+.file-icon.powerpoint {
+  color: #f57c00;
+}
+
+.file-icon.text {
+  color: #616161;
+}
+
+.file-icon.default {
+  color: rgb(52, 106, 134);
+}
+
+.file-details-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-name {
+  color: rgb(35, 21, 32);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.file-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-size {
+  color: rgb(52, 106, 134);
+  font-size: 11px;
+}
+
+.file-date {
+  color: rgba(52, 106, 134, 0.8);
+  font-size: 11px;
+}
+
+/* File Actions */
+.file-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.upload-success {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.success-icon {
+  color: #4caf50;
+  font-size: 12px;
+}
+
+.success-text {
+  color: #4caf50;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.remove-file-button {
+  background: transparent;
+  border: none;
+  color: #e74144;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.remove-file-button:hover {
+  background-color: rgba(231, 65, 68, 0.1);
+  transform: scale(1.1);
+}
+
+/* Files Summary */
+.files-summary {
+  padding: 8px 15px 12px;
+  text-align: center;
+}
+
+.summary-text {
+  color: rgb(52, 106, 134);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .uploaded-files-header {
+    padding: 10px 12px;
+  }
+  
+  .uploaded-files-header h4 {
+    font-size: 13px;
+  }
+  
+  .expand-toggle {
+    font-size: 11px;
+  }
+  
+  .uploaded-file-item {
+    padding: 8px 6px;
+  }
+  
+  .file-icon-wrapper {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .file-icon {
+    font-size: 16px;
+  }
+  
+  .file-name {
+    font-size: 12px;
+  }
+  
+  .file-size,
+  .file-date {
+    font-size: 10px;
+  }
+  
+  .success-text {
+    font-size: 10px;
+  }
+}
+
+/* Animation for expand/collapse */
+.uploaded-files-list {
+  transition: max-height 0.3s ease;
+}
+
+/* Smooth appearance animation */
+.uploaded-file-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

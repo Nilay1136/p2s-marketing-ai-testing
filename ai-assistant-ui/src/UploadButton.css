@@ -1,0 +1,65 @@
+/* Upload Button Container */
+.upload-button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Upload Button */
+.upload-button {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.upload-button:hover:not(.disabled) {
+  background-color: rgb(35, 21, 32);
+  transform: scale(1.05);
+}
+
+.upload-button.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.upload-button:active:not(.disabled) {
+  transform: scale(0.95);
+}
+
+/* Upload Icon */
+.upload-icon {
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.upload-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .upload-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .upload-icon {
+    font-size: 14px;
+  }
+}

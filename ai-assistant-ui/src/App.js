@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef,useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
 import {
@@ -14,22 +14,85 @@ import {
   FaSignInAlt
 } from 'react-icons/fa';
 import logo from './P2S_Legence_Logo_White.png';
-//1
-import { API_BASE_URL } from './apiConfig'; 
+import { API_ENDPOINTS, DEPARTMENT_AGENT_MAP } from './apiConfig'; 
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Modal from 'react-modal';
 import { ToastContainer, toast } from 'react-toastify';
 import { Trash } from 'lucide-react';
 import 'react-toastify/dist/ReactToastify.css';
-import { useMsal, useAccount, AuthenticatedTemplate, UnauthenticatedTemplate, useIsAuthenticated } from "@azure/msal-react";
-import { loginRequest,apiRequest } from "./authConfig";
-import PageLayout from "./PageLayout.js";
+
+// Import components (create fallbacks if missing)
+let UploadButton, Tools, ProgressBar, UploadedFiles, AgentIndicator;
+
+try {
+  AgentIndicator = require('./AgentIndicator').default;
+} catch (e) {
+  // Fallback component if AgentIndicator.js doesn't exist yet
+  AgentIndicator = ({ agentType }) => (
+    <div style={{ 
+      display: 'inline-block', 
+      fontSize: '10px', 
+      backgroundColor: '#4f46e5', 
+      color: 'white', 
+      padding: '2px 6px', 
+      borderRadius: '8px', 
+      marginBottom: '4px' 
+    }}>
+      {agentType?.toUpperCase() || 'AI'}
+    </div>
+  );
+}
+
+try {
+  UploadButton = require('./UploadButton').default;
+} catch (e) {
+  UploadButton = ({ onFileUpload, onUploadProgress, disabled }) => (
+    <button 
+      className="upload-button" 
+      disabled={disabled}
+      onClick={() => toast.info("Upload feature coming soon!")}
+      title="Upload files"
+    >
+      📎
+    </button>
+  );
+}
+
+try {
+  Tools = require('./Tools').default;
+} catch (e) {
+  Tools = ({ selectedDepartment, onToolSelect }) => (
+    <div className="tools-section" style={{ padding: '10px', marginTop: '10px' }}>
+      <h4 style={{ color: '#666' }}>🛠 Tools</h4>
+      <div style={{ fontSize: '12px', color: '#999' }}>Coming Soon</div>
+    </div>
+  );
+}
+
+try {
+  ProgressBar = require('./ProgressBar').default;
+} catch (e) {
+  ProgressBar = ({ file, progress, status, onCancel }) => (
+    <div style={{ padding: '5px', fontSize: '12px' }}>
+      Uploading {file.name}: {progress}%
+    </div>
+  );
+}
+
+try {
+  UploadedFiles = require('./UploadedFiles').default;
+} catch (e) {
+  UploadedFiles = ({ files, onRemoveFile, maxVisible }) => (
+    <div style={{ padding: '5px', fontSize: '12px' }}>
+      {files.length} file(s) uploaded
+    </div>
+  );
+}
 
 // Set the app element for accessibility
-Modal.setAppElement('#root');  //2
+Modal.setAppElement('#root');
 
-//3
 // Debounce function to limit the rate of function execution
 function debounce(func, wait) {
   let timeout;
@@ -48,12 +111,11 @@ const CircularLogo = ({ isBotMessage }) => (
   <div className={`circular-logo ${isBotMessage ? 'bot-logo' : ''}`}>
     <div className="blue-circle">
       <img src={logo} alt="Logo" className="circular-logo-image" />
-      <div className="lime-green-dot"></div> {/* Lime green dot added here */}
+      <div className="lime-green-dot"></div>
     </div>
   </div>
 );
 
-//4
 // Department List Component
 const DepartmentList = ({
   isVisible,
@@ -61,22 +123,20 @@ const DepartmentList = ({
   handleDepartmentSelection,
   selectedDepartment
 }) => {
-  // Define departments with a flag indicating if they are enabled
   const departments = [
     { name: 'Human Resources', enabled: true },
     { name: 'Project Management', enabled: false },
     { name: 'Engineering', enabled: false },
     { name: 'BIM', enabled: false },
-    { name: 'Marketing', enabled: false },
+    { name: 'Marketing', enabled: true },
     { name: 'IT', enabled: false },
   ];
 
-  // Function to handle mouse enter on disabled departments
   const handleMouseEnter = (dept) => {
     if (!dept.enabled) {
       toast.info("Coming Soon!", {
         position: "top-right",
-        autoClose: 2000, // Duration in milliseconds
+        autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -115,47 +175,7 @@ const DepartmentList = ({
   );
 };
 
-//modified component
-// Banner Component to display announcements and events
-const Banner = ({ announcements }) => {
-  const bannerTextRef = useRef(null);
-  const [animationDuration, setAnimationDuration] = useState(0);
-
-  useEffect(() => {
-    const updateAnimationDuration = () => {
-      const bannerTextElement = bannerTextRef.current;
-      const bannerWrapper = document.querySelector('.banner-text-wrapper');
-
-      if (bannerTextElement && bannerWrapper) {
-        setAnimationDuration(150);
-      }
-    };
-
-    updateAnimationDuration();
-    window.addEventListener('resize', updateAnimationDuration);
-
-    return () => {
-      window.removeEventListener('resize', updateAnimationDuration);
-    };
-  }, [announcements]);
-
-  const combinedAnnouncments = announcements.join(" ~~~●~~~ "); // Combine all announcements for animation
-
-  return (
-    <div className="banner">
-      <div className="banner-text-wrapper">
-        <span 
-          className="banner-text"
-          ref={bannerTextRef}
-          style={{ animationDuration: `${animationDuration}s` }}
-          dangerouslySetInnerHTML={{ __html: combinedAnnouncments}}
-        ></span>
-      </div>
-    </div>
-  ); 
-};
-
-//new component
+// Footer Component
 const Footer = () => {
   const [showAboutTooltip, setShowAboutTooltip] = useState(false);
   const [showDisclaimerTooltip, setShowDisclaimerTooltip] = useState(false);
@@ -201,457 +221,927 @@ const Footer = () => {
   );
 };
 
-function App() {
-  const [conversations, setConversations] = useState([]); //5
-  const { instance, accounts } = useMsal(); //6
-  const account = useAccount(accounts[0] || {}); //7
-  const isAuthenticated = useIsAuthenticated(); //8
-  const [user, setUser] = useState(null); //9
-  const [accessToken, setAccessToken] = useState(''); //10
-  const [error, setError] = useState(null); //11
+// Banner Component to display announcements and events
+const Banner = ({ announcements, selectedDepartment }) => {
+  const bannerTextRef = useRef(null);
+  const [animationDuration, setAnimationDuration] = useState(0);
 
+  // Department-specific announcements
+  const departmentAnnouncements = {
+    'Human Resources': announcements,
+    'Marketing': [
+      'Marketing team: New brand guidelines available on SharePoint.',
+      'Q4 campaign materials due by December 15th.',
+      'Social media calendar updated for holiday season.',
+      'Marketing ROI reports due monthly.',
+      'Content review meetings every Tuesday at 2PM.',
+    ]
+  };
+
+  const currentAnnouncements = departmentAnnouncements[selectedDepartment] || announcements;
+
+  useEffect(() => {
+    const updateAnimationDuration = () => {
+      const bannerTextElement = bannerTextRef.current;
+      const bannerWrapper = document.querySelector('.banner-text-wrapper');
+
+      if (bannerTextElement && bannerWrapper) {
+        setAnimationDuration(150);
+      }
+    };
+
+    updateAnimationDuration();
+    window.addEventListener('resize', updateAnimationDuration);
+
+    return () => {
+      window.removeEventListener('resize', updateAnimationDuration);
+    };
+  }, [currentAnnouncements]);
+
+  const combinedAnnouncements = currentAnnouncements.join(" ~~~◦~~~ ");
+
+  return (
+    <div className="banner">
+      <div className="banner-text-wrapper">
+        <span 
+          className="banner-text"
+          ref={bannerTextRef}
+          style={{ animationDuration: `${animationDuration}s` }}
+          dangerouslySetInnerHTML={{ __html: combinedAnnouncements}}
+        ></span>
+      </div>
+    </div>
+  ); 
+};
+
+// Enhanced message rendering section for your App.js
+// Replace the existing message rendering section with this improved version
+
+const MessageContent = ({ message }) => {
+  const isBot = message.sender === 'assistant';
+  
+  if (isBot) {
+    return (
+      <div className="bot-message-content">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            // Links
+            a: ({ node, ...props }) => (
+              <a {...props} target="_blank" rel="noopener noreferrer" />
+            ),
+            
+            // Tables
+            table: ({ node, ...props }) => (
+              <table {...props} style={{ 
+                border: '1px solid rgba(240, 248, 255, 0.3)', 
+                borderCollapse: 'collapse',
+                width: '100%',
+                margin: '12px 0'
+              }} />
+            ),
+            th: ({ node, ...props }) => (
+              <th {...props} style={{ 
+                backgroundColor: 'rgba(240, 248, 255, 0.2)', 
+                padding: '8px 12px', 
+                border: '1px solid rgba(240, 248, 255, 0.3)',
+                fontWeight: '600',
+                color: '#f0f8ff'
+              }} />
+            ),
+            td: ({ node, ...props }) => (
+              <td {...props} style={{ 
+                padding: '8px 12px', 
+                border: '1px solid rgba(240, 248, 255, 0.3)'
+              }} />
+            ),
+            
+            // Headings with proper hierarchy
+            h1: ({ node, ...props }) => (
+              <h1 {...props} style={{ 
+                fontSize: '1.3em', 
+                fontWeight: '600', 
+                margin: '20px 0 10px 0', 
+                color: '#f0f8ff',
+                borderBottom: '2px solid rgba(240, 248, 255, 0.3)',
+                paddingBottom: '4px'
+              }} />
+            ),
+            h2: ({ node, ...props }) => (
+              <h2 {...props} style={{ 
+                fontSize: '1.2em', 
+                fontWeight: '600', 
+                margin: '18px 0 8px 0', 
+                color: '#f0f8ff',
+                borderBottom: '1px solid rgba(240, 248, 255, 0.2)',
+                paddingBottom: '3px'
+              }} />
+            ),
+            h3: ({ node, ...props }) => (
+              <h3 {...props} style={{ 
+                fontSize: '1.1em', 
+                fontWeight: '600', 
+                margin: '16px 0 6px 0', 
+                color: '#e6f3ff'
+              }} />
+            ),
+            h4: ({ node, ...props }) => (
+              <h4 {...props} style={{ 
+                fontSize: '1.05em', 
+                fontWeight: '600', 
+                margin: '14px 0 5px 0', 
+                color: '#ddeeff'
+              }} />
+            ),
+            h5: ({ node, ...props }) => (
+              <h5 {...props} style={{ 
+                fontSize: '1em', 
+                fontWeight: '600', 
+                margin: '12px 0 4px 0', 
+                color: '#ccddff'
+              }} />
+            ),
+            h6: ({ node, ...props }) => (
+              <h6 {...props} style={{ 
+                fontSize: '0.95em', 
+                fontWeight: '600', 
+                margin: '10px 0 4px 0', 
+                color: '#ccddff'
+              }} />
+            ),
+            
+            // Paragraphs with proper spacing
+            p: ({ node, ...props }) => (
+              <p {...props} style={{ 
+                margin: '8px 0', 
+                lineHeight: '1.6'
+              }} />
+            ),
+            
+            // Lists with proper indentation
+            ul: ({ node, ...props }) => (
+              <ul {...props} style={{ 
+                margin: '12px 0', 
+                paddingLeft: '24px',
+                lineHeight: '1.5'
+              }} />
+            ),
+            ol: ({ node, ...props }) => (
+              <ol {...props} style={{ 
+                margin: '12px 0', 
+                paddingLeft: '24px',
+                lineHeight: '1.5'
+              }} />
+            ),
+            li: ({ node, ...props }) => (
+              <li {...props} style={{ 
+                margin: '6px 0',
+                lineHeight: '1.5'
+              }} />
+            ),
+            
+            // Strong text
+            strong: ({ node, ...props }) => (
+              <strong {...props} style={{ 
+                fontWeight: '700',
+                color: '#f0f8ff'
+              }} />
+            ),
+            
+            // Emphasis
+            em: ({ node, ...props }) => (
+              <em {...props} style={{ 
+                fontStyle: 'italic',
+                color: '#e6f3ff'
+              }} />
+            ),
+            
+            // Code blocks
+            code: ({ node, inline, ...props }) => 
+              inline ? (
+                <code {...props} style={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                  padding: '2px 4px',
+                  borderRadius: '3px',
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: '0.9em',
+                  color: '#f0f8ff'
+                }} />
+              ) : (
+                <code {...props} style={{
+                  display: 'block',
+                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  padding: '12px',
+                  borderRadius: '6px',
+                  fontFamily: '"Courier New", monospace',
+                  fontSize: '0.9em',
+                  color: '#f0f8ff',
+                  overflow: 'auto'
+                }} />
+              ),
+            
+            // Pre blocks
+            pre: ({ node, ...props }) => (
+              <pre {...props} style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                padding: '12px',
+                borderRadius: '6px',
+                overflow: 'auto',
+                margin: '12px 0'
+              }} />
+            ),
+            
+            // Blockquotes
+            blockquote: ({ node, ...props }) => (
+              <blockquote {...props} style={{
+                borderLeft: '4px solid rgba(240, 248, 255, 0.5)',
+                paddingLeft: '16px',
+                margin: '12px 0',
+                fontStyle: 'italic',
+                color: '#e6f3ff'
+              }} />
+            ),
+            
+            // Horizontal rules
+            hr: ({ node, ...props }) => (
+              <hr {...props} style={{
+                border: 'none',
+                borderTop: '1px solid rgba(240, 248, 255, 0.3)',
+                margin: '16px 0'
+              }} />
+            )
+          }}
+        >
+          {message.content}
+        </ReactMarkdown>
+      </div>
+    );
+  } else {
+    // User message - simple rendering
+    return (
+      <div className="user-message-content">
+        {message.content}
+      </div>
+    );
+  }
+};
+
+// Usage in your message rendering:
+// Replace this section in your App.js:
+/*
+<ReactMarkdown
+  remarkPlugins={[remarkGfm]}
+  components={{
+    // ... existing components
+  }}
+>
+  {msg.content}
+</ReactMarkdown>
+*/
+
+// With this:
+// <MessageContent message={msg} />
+function App() {
+  // State for sessions (renamed from conversations)
+  const [sessions, setSessions] = useState([]);
+  
+  // Hardcoded user for demo - no auth required
+  const [user] = useState({ username: "Demo User", user_id: "demo-user-123" }); 
+  const [accessToken] = useState('demo-token'); 
+  const isAuthenticated = true;
 
   const [announcements] = useState([
     'Benefits Open Enrollment is Monday, Nov. 4, through Friday, Nov. 15.',
     'Upcoming Company Holidays: November 28-29 & December 24, 2024-January 1, 2025.',
     'P2S 2025 Payroll and Holiday Calendar is available on the Intranet > HR > HR Toolbox.',
-    'FSA Reminder: You have until December 31 to incur eligible expenses for the 2024 plan year. Unused funds (up to $610) in your Healthcare FSA will roll over to the next plan year. Any amount over $610 will be forfeited.',
-    'Update your Employee Information (Address Changes): To ensure you receive end-of-year tax and benefit information, please confirm that your address and other personal details are accurate in <a href="https://access.paylocity.com/">Paylocity</a>.',
+    'FSA Reminder: You have until December 31 to incur eligible expenses for the 2024 plan year.',
+    'Update your Employee Information (Address Changes): Please confirm your details in <a href="https://access.paylocity.com/">Paylocity</a>.',
     'Don\'t forget to fill out your timecards at the end of each day.',
   ]);
 
-  const [activeConversationId, setActiveConversationId] = useState(null); //modified 1 to null
+  const [activeSessionId, setActiveSessionId] = useState(null);
   const [userInput, setUserInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isDepartmentListVisible, setIsDepartmentListVisible] = useState(false);
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState('Human Resources'); //modified default HR
-  const [isRightPanelVisible, setIsRightPanelVisible] = useState(false); // State for right panel visibility
+  const [selectedDepartment, setSelectedDepartment] = useState('Human Resources');
+  const [isRightPanelVisible, setIsRightPanelVisible] = useState(false);
   const [editMode, setEditMode] = useState({});
-  const [feedbackState, setFeedbackState] = useState({}); //12
-  const chatHistoryRef = useRef(null); // Reference to chat history
+  const [feedbackState, setFeedbackState] = useState({});
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const chatHistoryRef = useRef(null);
 
-  //13
-  //lets fetch user data
-  useEffect(()=>{
-    if(isAuthenticated&&account){
-      const fetchUserData=async()=>{
-        if(account){
-          try{
-            console.log('Getting token....')
-            const tokenResponse=await instance.acquireTokenSilent({
-              ...apiRequest,
-              account:account
-            });
-            console.log('Token acquired success!!')
-            console.log('Token: ',tokenResponse.accessToken)
-            setAccessToken(tokenResponse.accessToken)
-            const tokenPayload = JSON.parse(atob(tokenResponse.accessToken.split('.')[1]));
-            console.log('Token payload:', tokenPayload);
-            const response = await fetch(`${API_BASE_URL}/api/me`, {
-              headers: {
-                'Authorization': `Bearer ${tokenResponse.accessToken}`,
-                'Content-Type': 'application/json'
-              }
-            });
-            if (!response.ok) {
-              const errorText = await response.text();
-              throw new Error(`API call failed: ${response.status} - ${errorText}`);
-            }
-  
-            const data = await response.json();
-            console.log('User data:', data);
-            setUser(data);
-            setError(null);
-          }catch(error){
-            console.error('Error fetching user data:', error);
-            setError(error.message);
-            
-            if (error.name === "InteractionRequiredAuthError") {
-              try {
-                await instance.acquireTokenRedirect({
-                  ...apiRequest,
-                  account: account
-                });
-              } catch (redirectError) {
-                console.error('Token redirect failed:', redirectError);
-              }
-          }
-        }
-      }
-    }; fetchUserData();
-  }
-  }, [isAuthenticated, account, instance]);
-
-  //14
-  //fetch chats for user
+  // Load sessions on startup
   useEffect(() => {
-    const fetchChats = async () => {
-      if (!isAuthenticated || !user) return; // Changed isLoggedIn to isAuthenticated
-
-      try {
-        const response = await axios.get(`${API_BASE_URL}/chats`, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json', // Added Content-Type
-          }
-        });
-        const fetchedChats = response.data;
-
-        if (fetchedChats.length > 0) {
-          setConversations(fetchedChats);
-          setActiveConversationId(fetchedChats[0].id);
-          setSelectedDepartment(fetchedChats[0].department || 'Human Resources');
-        } else {
-          // If no chats exist, create a default chat for "Human Resources"
-          await createNewChat();
-        }
-      } catch (error) {
-        console.error("Error fetching chats:", error);
-        toast.error("Failed to fetch chats. Please try again.", {
-          position: "top-right",
-          autoClose: 3000,
-        });
-      }
-    };
-
-    fetchChats();
-  }, [isAuthenticated, user, accessToken]);
-
-
-  //login and logout handlers
-
-  const LoginPage = ({ onLogin }) => {
-    return (
-        <PageLayout>
-          <div className="login-container">
-            <button className="login-button" onClick={onLogin}>
-              <FaSignInAlt/> Sign In with Microsoft
-            </button>
-          </div>
-        </PageLayout>
-    );
-  };
-  
-  const handleLogin = async () => {
-    try {
-      const loginResponse = await instance.loginPopup(loginRequest);
-      const tokenResponse = await instance.acquireTokenSilent(loginRequest);
-      console.log("Access Token:", tokenResponse.accessToken); // Should NOT start with 'Bearer '
-      setAccessToken(tokenResponse.accessToken);
-    } catch (error) {
-      console.error(error);
+    console.log('App mounted, user:', user);
+    if (user?.user_id) {
+      console.log('Loading sessions for user:', user.user_id);
+      loadSessions();
     }
-  };
-  
-  const handleLogout = () => {
-    instance.logoutPopup().catch(e => {
-      console.error(e);
-      toast.error("Logout failed. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    });
-  };
+  }, [user?.user_id]);
 
-
+  // Scroll to bottom of chat
   useEffect(() => {
     if (chatHistoryRef.current) {
       chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
     }
-  }, [conversations, isTyping]);
+  }, [sessions, isTyping]);
 
-  const toggleDepartmentList = () => {
-    setIsDepartmentListVisible(!isDepartmentListVisible);
+  const loadSessions = async () => {
+    console.log('loadSessions called');
+    console.log('API Base:', API_ENDPOINTS.BASE);
+    console.log('Endpoint:', API_ENDPOINTS.SESSIONS.LIST(user.user_id));
+    
+    try {
+      const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.SESSIONS.LIST(user.user_id)}`;
+      console.log('Fetching from URL:', url);
+      
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Load sessions response:', response.data);
+      const fetchedSessions = response.data.sessions || [];
+      setSessions(fetchedSessions);
+
+      if (fetchedSessions.length > 0) {
+        console.log('Setting active session to:', fetchedSessions[0].session_id);
+        setActiveSessionId(fetchedSessions[0].session_id);
+      } else {
+        console.log('No existing sessions, creating default session');
+        await createNewSession();
+      }
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+      console.error("Full error details:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        config: {
+          url: error.config?.url,
+          method: error.config?.method
+        }
+      });
+      
+      // Create a fallback local session for demo purposes
+      console.log('API failed, creating local session');
+      await createFallbackSession();
+    }
   };
 
-  //15
-  const handleDepartmentSelection = (department) => {
-    if (department === selectedDepartment) {
-      // If the selected department is already active, do nothing
-      setIsDepartmentListVisible(false);
+  const createNewSession = async () => {
+    console.log('createNewSession called');
+    console.log('Selected department:', selectedDepartment);
+    console.log('User:', user);
+    
+    if (!user?.user_id) {
+      console.error('Cannot create session: user not available');
       return;
     }
 
-    // Check if a chat for the selected department already exists
-    const existingChat = conversations.find(conv => conv.department === department);
-    if (existingChat) {
-      // Activate the existing chat
-      setActiveConversationId(existingChat.id);
-      setSelectedDepartment(department);
-      setIsDepartmentListVisible(false);
-    } else {
-      // Create a new chat for the department
-      setSelectedDepartment(department);
-      setIsDepartmentListVisible(false);
-      createNewChat();
-    }
-  };
-
-  //16
-  //Create a new chat
-  const createNewChat = async () => { 
     try {
-      const token = accessToken;
-      if (!token) {
-        throw new Error("Access token is missing.");
-      }
-  
-      console.log('Access Token:', token);
-  
-      const response = await axios.post(
-        `${API_BASE_URL}/create_chat`,
-        {}, // Ensure payload matches backend expectations
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`, // Correctly prefixed
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-  
-      console.log('Create chat response:', response.data);
-  
-      const newChat = {
-        id: response.data.chat_id, // Ensure 'chat_id' matches the backend's response
-        name: `Chat ${response.data.chat_id.slice(0, 8)}`,
-        department: 'Human Resources',
-        messages: [],
+      const url = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.SESSIONS.CREATE}`;
+      console.log('Creating session at URL:', url);
+      
+      const requestData = {
+        user_id: user.user_id,
+        title: `${selectedDepartment} Chat`
       };
-      setConversations((prev) => [...prev, newChat]);
-      setActiveConversationId(newChat.id);
-      toast.success("New chat created for Human Resources");
+      console.log('Request data:', requestData);
+
+      const response = await axios.post(url, requestData, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      console.log('Create session response:', response.data);
+
+      const newSession = {
+        session_id: response.data.session_id,
+        title: response.data.title || `${selectedDepartment} Chat`,
+        department: selectedDepartment,
+        messages: [],
+        created_at: new Date().toISOString(),
+        last_activity: new Date().toISOString()
+      };
+
+      console.log('Adding new session:', newSession);
+      setSessions(prev => {
+        const updated = [...prev, newSession];
+        console.log('Updated sessions list:', updated);
+        return updated;
+      });
+      
+      setActiveSessionId(newSession.session_id);
+      console.log('Set active session ID to:', newSession.session_id);
+      
+      toast.success(`New chat created for ${selectedDepartment}`);
     } catch (error) {
-      console.error("Error creating chat:", {
+      console.error("Error creating session via API:", error);
+      console.error("Full error details:", {
         message: error.message,
         status: error.response?.status,
         statusText: error.response?.statusText,
         data: error.response?.data
       });
       
-      if (error.response?.status === 401) {
-        // Token might be expired, try to get a new one
-        setAccessToken('');
-        toast.error('Authentication expired. Please try again.');
-      } else {
-        toast.error(error.response?.data?.detail || 'Failed to create chat');
-      }
+      // Fallback to local session creation
+      console.log('API failed, creating fallback local session');
+      await createFallbackSession();
     }
   };
 
-  //17
-  const handleSendMessage = useCallback(async () => {
-    if (userInput.trim() === '' || !activeConversationId) return;
-
-    console.log("Sending message:", userInput);
-    const token = accessToken;
-
-    const newMessage = {
-      sender: 'user',
-      text: userInput,
-      timestamp: new Date().toISOString(),
-      rating: null
+  // Fallback session creation for demo purposes
+  const createFallbackSession = async () => {
+    console.log('Creating fallback local session');
+    
+    const fallbackSession = {
+      session_id: `local-${Date.now()}`,
+      title: `${selectedDepartment} Chat`,
+      department: selectedDepartment,
+      messages: [],
+      created_at: new Date().toISOString(),
+      last_activity: new Date().toISOString()
     };
-    updateConversationMessages(activeConversationId, newMessage);
+    
+    console.log('Fallback session:', fallbackSession);
+    setSessions(prev => {
+      const updated = [...prev, fallbackSession];
+      console.log('Updated sessions with fallback:', updated);
+      return updated;
+    });
+    
+    setActiveSessionId(fallbackSession.session_id);
+    console.log('Set active session ID to fallback:', fallbackSession.session_id);
+    
+    toast.warning("Created local session (API unavailable)");
+  };
 
-    setUserInput('');
-    setIsTyping(true);
-
-    try {
-      const response = await axios.post(`${API_BASE_URL}/send_message`, {
-        chat_id: activeConversationId,
-        message: userInput,
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        }
-      });
-
-      console.log("Received response:", response.data);
-
-      // Only add bot response if there's actual response content
-      if (response.data.response && response.data.response.trim() !== '') {
-        const botResponse = {
-          sender: 'AI Assistant',
-          text: response.data.response,
-          timestamp: new Date().toISOString(),
-          response_id: response.data.response_id,
-          query: userInput,
-          rating: null,
-          feedbackSubmitted: false,
-          sources: response.data.sources || []
-        };
-        console.debug("Bot response:", botResponse);
-        updateConversationMessages(activeConversationId, botResponse);
-      } else {
-        console.debug("No response needed for casual message");
-        // Don't show any error or warning for intentionally empty responses
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      const botResponse = {
-        sender: 'AI Assistant',
-        text: "An unexpected error occurred. Please try again.",
-        timestamp: new Date().toISOString(),
-        response_id: null,
-        query: userInput,
-        rating: null,
-        feedbackSubmitted: false,
-        sources: []
-      };
-      updateConversationMessages(activeConversationId, botResponse);
-    } finally {
-      setIsTyping(false);
-    }
-  }, [userInput, activeConversationId, accessToken]);
-  // //sendmessage
   // const handleSendMessage = useCallback(async () => {
-  //   if (userInput.trim() === '' || !activeConversationId) return;
+  //   if (userInput.trim() === '' || !activeSessionId) return;
 
-  //   console.log("Sending message:", userInput);
-  //   const token=accessToken
-
-  //   const newMessage = {
-  //     sender: 'user',
-  //     text: userInput,
-  //     timestamp: new Date().toISOString(),
-  //     rating: null
-  //   };
-  //   updateConversationMessages(activeConversationId, newMessage);
-
+  //   const messageText = userInput.trim();
   //   setUserInput('');
   //   setIsTyping(true);
 
+  //   // Add user message to UI immediately
+  //   const userMessage = {
+  //     sender: 'user',
+  //     content: messageText,
+  //     timestamp: new Date().toISOString()
+  //   };
+
+  //   setSessions(prevSessions =>
+  //     prevSessions.map(session =>
+  //       session.session_id === activeSessionId
+  //         ? { ...session, messages: [...(session.messages || []), userMessage] }
+  //         : session
+  //     )
+  //   );
+
   //   try {
-  //     const response = await axios.post(`${API_BASE_URL}/send_message`, {
-  //       chat_id: activeConversationId,
-  //       message: userInput,
-  //     }, {
+  //     // Prepare files for backend if any exist
+  //     const filesData = (uploadedFiles || []).filter(file => file?.id).map(file => {
+  //       let base64Content = '';
+        
+  //       if (file.content && file.content.length > 0) {
+  //         const binaryString = String.fromCharCode(...file.content);
+  //         base64Content = btoa(binaryString);
+  //       }
+        
+  //       return {
+  //         filename: file.name,
+  //         content: base64Content,
+  //         content_type: file.type,
+  //         size: file.size,
+  //         // Add these required fields:
+  //         file_size: file.size,    // Backend expects this field
+  //         file_type: file.type     // Backend expects this field
+  //       };
+  //     });
+
+  //     const chatRequest = {
+  //       session_id: activeSessionId,
+  //       user_id: user.user_id,
+  //       message: messageText,
+  //       files: filesData.length > 0 ? filesData : undefined,
+  //       agent_preference: DEPARTMENT_AGENT_MAP[selectedDepartment]
+  //     };
+
+  //     console.log('Sending chat request:', chatRequest);
+
+  //     const response = await axios.post(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.CHAT}`, chatRequest, {
   //       headers: {
-  //         'Authorization': `Bearer ${token}`,
-  //         'Content-Type': 'application/json', // Added Content-Type
+  //         'Authorization': `Bearer ${accessToken}`,
+  //         'Content-Type': 'application/json'
   //       }
   //     });
 
-  //     console.log("Received response:", response.data);
+  //     console.log('Chat response received:', response.data);
 
-  //     if (response.data.response) {
-  //       const botResponse = {
-  //         sender: 'AI Assistant',
-  //         text: response.data.response,
-  //         timestamp: new Date().toISOString(),
-  //         response_id: response.data.response_id, // Store response_id
-  //         query: userInput, // Store the original user query
-  //         rating: null,
-  //         feedbackSubmitted: false ,// Track if feedback has been submitted
-  //         sources: response.data.sources || []
-  //       };
-  //       console.debug("bot responded", botResponse)
-  //       updateConversationMessages(activeConversationId, botResponse);
-  //     } else {
-  //       console.warn("No response text received");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-  //     const botResponse = {
-  //       sender: 'AI Assistant',
-  //       text: "An unexpected error occurred. Please try again.",
+  //     // Add assistant response to UI
+  //     const assistantMessage = {
+  //       sender: 'assistant',
+  //       content: response.data.response,
   //       timestamp: new Date().toISOString(),
-  //       response_id: null,
-  //       query: userInput,
-  //       rating: null,
+  //       response_id: response.data.response_id,
+  //       agent_used: response.data.agent_used,
+  //       sources: response.data.sources || [],
+  //       generated_files: response.data.generated_files || [],
   //       feedbackSubmitted: false
   //     };
-  //     updateConversationMessages(activeConversationId, botResponse);
+
+  //     setSessions(prevSessions =>
+  //       prevSessions.map(session =>
+  //         session.session_id === activeSessionId
+  //           ? { ...session, messages: [...session.messages, assistantMessage] }
+  //           : session
+  //       )
+  //     );
+
+  //     // Clear uploaded files after successful send
+  //     setUploadedFiles([]);
+
+  //   } catch (error) {
+  //     console.error("Error sending message:", error);
+      
+  //     const errorMessage = {
+  //       sender: 'assistant',
+  //       content: `I encountered an error processing your request. This is a demo mode - backend may not be available. Error: ${error.response?.status || 'Connection failed'}`,
+  //       timestamp: new Date().toISOString(),
+  //       response_id: null,
+  //       feedbackSubmitted: false
+  //     };
+
+  //     setSessions(prevSessions =>
+  //       prevSessions.map(session =>
+  //         session.session_id === activeSessionId
+  //           ? { ...session, messages: [...session.messages, errorMessage] }
+  //           : session
+  //       )
+  //     );
+
+  //     toast.error(`Demo mode: Backend not available (${error.response?.status || 'Connection Error'})`);
   //   } finally {
   //     setIsTyping(false);
   //   }
-  // }, [userInput, activeConversationId, accessToken]);
+  // },[userInput, activeSessionId, uploadedFiles]);
+//   const handleSendMessage = useCallback(async () => {
+//   if (userInput.trim() === '' || !activeSessionId) return;
 
-  //18
-  // Debounced version of handleSendMessage to prevent rapid-fire messages
+//   const messageText = userInput.trim();
+//   setUserInput('');
+//   setIsTyping(true);
+
+//   // Add user message
+//   setSessions(prevSessions =>
+//     prevSessions.map(session =>
+//       session.session_id === activeSessionId
+//         ? { ...session, messages: [...(session.messages || []), {
+//             sender: 'user',
+//             content: messageText,
+//             timestamp: new Date().toISOString()
+//           }] }
+//         : session
+//     )
+//   );
+
+//   try {
+//     console.log('Uploaded files before sending:', uploadedFiles); // Debug
+//     console.log('Active session ID:', activeSessionId);
+//     console.log('File session IDs:', uploadedFiles.map(f => f.sessionId));
+
+//     // Process files from uploadedFiles state
+//     // In handleSendMessage, replace the file processing section with:
+// const filesData = [];
+// if (uploadedFiles && uploadedFiles.length > 0) {
+//   for (const file of uploadedFiles) {
+//     if (file?.content && file?.name) {
+//       try {
+//         // Simple approach - convert Uint8Array directly to base64
+//         let base64Content = '';
+//         if (file.content instanceof Uint8Array) {
+//           const binaryString = Array.from(file.content, byte => String.fromCharCode(byte)).join('');
+//           base64Content = btoa(binaryString);
+//         }
+        
+//         if (base64Content) {
+//           filesData.push({
+//             filename: file.name,
+//             content: base64Content,
+//             content_type: file.type || 'application/pdf',
+//             size: file.size || file.content.length
+//           });
+//         }
+//       } catch (e) {
+//         console.warn('Failed to process file:', file.name, e);
+//       }
+//     }
+//   }
+// }
+
+//     console.log('Files being sent to backend:', filesData.length); // Debug
+
+//     const chatRequest = {
+//       session_id: activeSessionId,
+//       user_id: user.user_id,
+//       message: messageText,
+//       files: filesData.length > 0 ? filesData : undefined,
+//       agent_preference: DEPARTMENT_AGENT_MAP[selectedDepartment]
+//     };
+
+//     const response = await axios.post(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.CHAT}`, chatRequest);
+
+//     // Add response
+//     setSessions(prevSessions =>
+//       prevSessions.map(session =>
+//         session.session_id === activeSessionId
+//           ? { ...session, messages: [...session.messages, {
+//               sender: 'assistant',
+//               content: response.data.response,
+//               timestamp: new Date().toISOString(),
+//               response_id: response.data.response_id,
+//               sources: response.data.sources || []
+//             }] }
+//           : session
+//       )
+//     );
+
+//   } catch (error) {
+//     console.error("Error:", error);
+//   } finally {
+//     setIsTyping(false);
+//   }
+// }, [userInput, activeSessionId, uploadedFiles]);
+const handleSendMessage = useCallback(async () => {
+  if (userInput.trim() === '' || !activeSessionId) return;
+
+  const messageText = userInput.trim();
+  setUserInput('');
+  setIsTyping(true);
+
+  // Add user message
+  setSessions(prevSessions =>
+    prevSessions.map(session =>
+      session.session_id === activeSessionId
+        ? { ...session, messages: [...(session.messages || []), {
+            sender: 'user',
+            content: messageText,
+            timestamp: new Date().toISOString()
+          }] }
+        : session
+    )
+  );
+
+  try {
+    // IMPORTANT FIX: Only get files for the current active session
+    const currentSessionFiles = uploadedFiles.filter(file => file.sessionId === activeSessionId);
+    
+    console.log('=== FILE DEBUG ===');
+    console.log('All uploaded files:', uploadedFiles.length);
+    console.log('Current session files:', currentSessionFiles.length);
+    console.log('Active session ID:', activeSessionId);
+    console.log('Current session files details:', currentSessionFiles.map(f => ({ 
+      id: f.id, 
+      name: f.name, 
+      sessionId: f.sessionId 
+    })));
+
+    // Process only current session files
+    const filesData = [];
+    if (currentSessionFiles && currentSessionFiles.length > 0) {
+      for (const file of currentSessionFiles) {
+        if (file?.content && file?.name) {
+          try {
+            // Simple approach - convert Uint8Array directly to base64
+            let base64Content = '';
+            if (file.content instanceof Uint8Array) {
+              const binaryString = Array.from(file.content, byte => String.fromCharCode(byte)).join('');
+              base64Content = btoa(binaryString);
+            }
+            
+            if (base64Content) {
+              filesData.push({
+                filename: file.name,
+                content: base64Content,
+                content_type: file.type || 'application/pdf',
+                size: file.size || file.content.length
+              });
+            }
+          } catch (e) {
+            console.warn('Failed to process file:', file.name, e);
+          }
+        }
+      }
+    }
+
+    console.log('Files being sent to backend:', filesData.length);
+    console.log('File details being sent:', filesData.map(f => ({ filename: f.filename, size: f.size })));
+
+    // UPDATED: Get agent preference from DEPARTMENT_AGENT_MAP, but allow null for intent-based routing
+    const agentPreference = DEPARTMENT_AGENT_MAP[selectedDepartment];
+    
+    console.log('=== ROUTING DEBUG ===');
+    console.log('Selected department:', selectedDepartment);
+    console.log('Agent preference from map:', agentPreference);
+    console.log('Message:', messageText);
+    console.log('Will use intent-based routing:', agentPreference === null);
+
+    const chatRequest = {
+      session_id: activeSessionId,
+      user_id: user.user_id,
+      message: messageText,
+      files: filesData.length > 0 ? filesData : undefined,
+      agent_preference: agentPreference
+    };
+
+    // Add this debug line as requested
+    console.log('Final chatRequest being sent:', JSON.stringify(chatRequest, null, 2));
+
+    const response = await axios.post(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.CHAT}`, chatRequest);
+
+    // Add response
+    setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.session_id === activeSessionId
+          ? { ...session, messages: [...session.messages, {
+              sender: 'assistant',
+              content: response.data.response,
+              timestamp: new Date().toISOString(),
+              response_id: response.data.response_id,
+              sources: response.data.sources || [],
+              agent_used: response.data.agent_used,
+            }] }
+          : session
+      )
+    );
+
+    // Clear uploaded files for current session after successful send
+    setUploadedFiles(prev => prev.filter(file => file.sessionId !== activeSessionId));
+
+  } catch (error) {
+    console.error("Error:", error);
+    
+    // Add error message
+    setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.session_id === activeSessionId
+          ? { ...session, messages: [...session.messages, {
+              sender: 'assistant',
+              content: `I encountered an error processing your request: ${error.response?.data?.detail || error.message}`,
+              timestamp: new Date().toISOString()
+            }] }
+          : session
+      )
+    );
+  } finally {
+    setIsTyping(false);
+  }
+}, [userInput, activeSessionId, uploadedFiles, selectedDepartment, user.user_id]);
+
   const debounceSendMessage = useCallback(debounce(handleSendMessage, 300), [handleSendMessage]);
 
-  //19 delete
-  const handleDeleteConversation = async (conversationId) => {
+  const handleDeleteSession = async (sessionId) => {
+    console.log('Deleting session:', sessionId);
+    
     try {
-      const response = await axios.delete(`${API_BASE_URL}/chats/${conversationId}`, {
+      await axios.delete(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.SESSIONS.DELETE(sessionId)}`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json', // Added Content-Type
+          'Content-Type': 'application/json'
         }
       });
 
-      if (response.status !== 200) {
-        throw new Error('Failed to delete conversation');
+      console.log('Session deleted via API');
+    } catch (error) {
+      console.error('API delete failed, proceeding with local delete:', error);
+    }
+
+    // Remove session from local state regardless of API success
+    setSessions(prevSessions => {
+      const filtered = prevSessions.filter(session => session.session_id !== sessionId);
+      console.log('Sessions after delete:', filtered);
+      return filtered;
+    });
+
+    if (activeSessionId === sessionId) {
+      const remainingSessions = sessions.filter(session => session.session_id !== sessionId);
+      if (remainingSessions.length > 0) {
+        setActiveSessionId(remainingSessions[0].session_id);
+        console.log('Switched to session:', remainingSessions[0].session_id);
+      } else {
+        setActiveSessionId(null);
+        console.log('No remaining sessions, creating new one');
+        await createNewSession();
       }
+    }
 
-      console.log('Conversation deleted successfully');
+    toast.success("Session deleted successfully");
+  };
 
-      // Remove the conversation from the state
-      setConversations((prevConversations) =>
-        prevConversations.filter((conversation) => conversation.id !== conversationId)
-      );
+  const toggleDepartmentList = () => {
+    setIsDepartmentListVisible(!isDepartmentListVisible);
+  };
 
-      // Update the active conversation if the deleted one was active
-      if (activeConversationId === conversationId) {
-        const remainingConversations = conversations.filter((conv) => conv.id !== conversationId);
-        if (remainingConversations.length > 0) {
-          setActiveConversationId(remainingConversations[0].id);
-          setSelectedDepartment(remainingConversations[0].department || 'Human Resources');
-        } else {
-          setActiveConversationId(null);
-          setSelectedDepartment('Human Resources');
-          // Optionally, create a default chat if no conversations remain
-          createNewChat();
-        }
-      }
-      toast.success("Conversation deleted successfully", {
-        position: "top-right",
-        autoClose: 1000,
+  const handleDepartmentSelection = (department) => {
+    if (department === selectedDepartment) {
+      setIsDepartmentListVisible(false);
+      return;
+    }
+
+    const existingSession = sessions.find(session => session.department === department);
+    if (existingSession) {
+      setActiveSessionId(existingSession.session_id);
+      setSelectedDepartment(department);
+      setIsDepartmentListVisible(false);
+    } else {
+      setSelectedDepartment(department);
+      setIsDepartmentListVisible(false);
+      createNewSession();
+    }
+  };
+
+  // File upload handlers with fallbacks
+  const handleFileUpload = async (file, fileData) => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      const enhancedFileData = {
+        ...fileData,
+        content: uint8Array,
+        size: file.size,
+        type: file.type,
+        name: file.name,
+        sessionId: activeSessionId
+      };
+      
+      setUploadedFiles(prev => [...prev, enhancedFileData]);
+      setUploadProgress(prev => {
+        const updated = { ...prev };
+        delete updated[enhancedFileData.id];
+        return updated;
       });
     } catch (error) {
-      console.error('Error deleting conversation:', error);
-      toast.error("Failed to delete the conversation. Please try again.", {
-        position: "top-right",
-        autoClose: 1000,
-      });
+      console.error('Error processing uploaded file:', error);
+      toast.error('Failed to process uploaded file');
     }
   };
 
-  //20
-  // Function to update messages in a conversation
-  const updateConversationMessages = (conversationId, message) => {
-    setConversations((prevConversations) =>
-      prevConversations.map((conversation) =>
-        conversation.id === conversationId
-          ? { ...conversation, messages: [...conversation.messages, message] }
-          : conversation
-      )
-    );
+  const handleUploadProgress = (fileData, progress, status) => {
+    setUploadProgress(prev => ({
+      ...prev,
+      [fileData.id]: { file: fileData, progress, status }
+    }));
   };
 
-  //modified
-  const handleAddConversation = () => {
-    if (conversations.length < 10) {
-      createNewChat(); // Removed department parameter
+  const handleRemoveFile = (fileId) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+  };
+
+  const handleCancelUpload = (fileId) => {
+    setUploadProgress(prev => {
+      const updated = { ...prev };
+      delete updated[fileId];
+      return updated;
+    });
+  };
+
+  const handleToolSelect = (tool) => {
+    toast.info(`${tool.name} tool selected - Integration coming soon!`);
+  };
+
+  const handleAddSession = async () => {
+    console.log('handleAddSession called');
+    console.log('Current sessions count:', sessions.length);
+    
+    if (sessions.length < 10) {
+      console.log('Creating new session from Add button');
+      await createNewSession();
     } else {
-      alert("You can't add more than 10 conversations.");
+      console.log('Maximum sessions reached');
+      toast.warning("Maximum 10 sessions allowed");
     }
   };
 
-  const handleEditConversationName = (id, newName) => {
-    setConversations((prevConversations) =>
-      prevConversations.map((conversation) =>
-        conversation.id === id ? { ...conversation, name: newName } : conversation
+  const handleEditSessionName = (id, newName) => {
+    setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.session_id === id ? { ...session, title: newName } : session
       )
     );
-    setEditMode((prevEditMode) => ({ ...prevEditMode, [id]: false })); 
+    setEditMode(prevEditMode => ({ ...prevEditMode, [id]: false }));
   };
 
   const toggleEditMode = (id) => {
-    setEditMode((prevEditMode) => ({
+    setEditMode(prevEditMode => ({
       ...prevEditMode,
       [id]: !prevEditMode[id],
     }));
@@ -661,22 +1151,36 @@ function App() {
     setIsLeftPanelCollapsed(!isLeftPanelCollapsed);
   };
 
-  const activeConversation = conversations.find(
-    (conv) => conv.id === activeConversationId
-  );
+  const activeSession = sessions.find(session => session.session_id === activeSessionId);
 
-  //21
-  // Feedback Handlers
+//   const handleSessionSwitch = (sessionId, department) => {
+//   setActiveSessionId(sessionId);
+//   setSelectedDepartment(department);
+//   // Clear uploaded files when switching sessions
+//   setUploadedFiles(prev => prev.filter(file => file.sessionId === sessionId));
+// };
+const handleSessionSwitch = (sessionId, department) => {
+  console.log('=== SESSION SWITCH DEBUG ===');
+  console.log('Switching from:', activeSessionId, 'to:', sessionId);
+  console.log('Files before switch:', uploadedFiles.filter(f => f.sessionId === sessionId).length);
+  
+  setActiveSessionId(sessionId);
+  setSelectedDepartment(department);
+  
+  // Files are already filtered by sessionId in the UI components, 
+  // so we don't need to clear them here
+};
+
+  // Feedback handlers (simplified for demo)
   const handleRating = (response_id, isHelpful, query, response) => {
-    // Show comment input if needed
-    setFeedbackState((prevState) => ({
+    setFeedbackState(prevState => ({
       ...prevState,
       [response_id]: { isVisible: true, isHelpful, query, response, comment: '' }
     }));
   };
 
   const handleCommentChange = (response_id, comment) => {
-    setFeedbackState((prevState) => ({
+    setFeedbackState(prevState => ({
       ...prevState,
       [response_id]: { ...prevState[response_id], comment }
     }));
@@ -686,292 +1190,322 @@ function App() {
     const feedback = feedbackState[response_id];
     if (!feedback) return;
 
-    const { isHelpful, query, response, comment } = feedback;
+    console.log('Feedback submitted:', { response_id, ...feedback });
+    
+    setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.session_id === activeSessionId
+          ? {
+              ...session,
+              messages: session.messages.map(msg =>
+                msg.response_id === response_id
+                  ? { ...msg, feedbackSubmitted: true }
+                  : msg
+              )
+            }
+          : session
+      )
+    );
 
-    try {
-      await axios.post(`${API_BASE_URL}/feedback`, {
-        response_id,
-        query,
-        response,
-        is_helpful: isHelpful,
-        comment,
-      }, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        }
-      });
-
-      // Update message to indicate feedback has been submitted
-      setConversations((prevConversations) =>
-        prevConversations.map((conversation) =>
-          conversation.id === activeConversationId
-            ? {
-                ...conversation,
-                messages: conversation.messages.map((msg) =>
-                  msg.response_id === response_id
-                    ? { ...msg, feedbackSubmitted: true }
-                    : msg
-                )
-              }
-            : conversation
-        )
-      );
-
-      // Hide feedback input
-      setFeedbackState((prevState) => ({
-        ...prevState,
-        [response_id]: { ...prevState[response_id], isVisible: false }
-      }));
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
-      toast.error("Failed to submit feedback. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-    }
+    setFeedbackState(prevState => ({
+      ...prevState,
+      [response_id]: { ...prevState[response_id], isVisible: false }
+    }));
+    
+    toast.success("Thank you for your feedback!");
   };
-  
 
   return (
     <div className="app">
-
-      {/* Toast Container for Notifications */}
       <ToastContainer />
-      <UnauthenticatedTemplate>
-        <LoginPage onLogin={handleLogin} />
-      </UnauthenticatedTemplate>
+      
+      <header className="main-header">
+        <div className="header-left">
+          <CircularLogo isBotMessage={false} />
+          <div className="title-stack">
+            <h1 className="welcome-text">Welcome, {user?.username}</h1>
+            <h1 className="department-title">{selectedDepartment}</h1>
+          </div>
+        </div>
+        
+        <div className="header-controls">
+          <DepartmentList
+            isVisible={isDepartmentListVisible}
+            toggleDepartmentList={toggleDepartmentList}
+            handleDepartmentSelection={handleDepartmentSelection}
+            selectedDepartment={selectedDepartment}
+          />
+        </div>
+        
+        <div className="logout-container">
+          <button 
+            className="logout-button" 
+            onClick={() => toast.info("Demo Mode - Auth disabled")}
+            style={{ opacity: 0.7 }}
+          >
+            <FaSignOutAlt /> Demo Mode
+          </button>
+        </div>
+      </header>
 
-      <AuthenticatedTemplate>
-        <>
-        <header className="main-header">
-          <div className="header-left">
-            <CircularLogo isBotMessage={false} />
-            <div className="title-stack">
-              <h1 className="welcome-text">Welcome, {user?.username}</h1>
-              <h1 className="department-title">{selectedDepartment}</h1>
-            </div>
-          </div>
-          
-          <div className="header-controls">
-            <DepartmentList
-              isVisible={isDepartmentListVisible}
-              toggleDepartmentList={toggleDepartmentList}
-              handleDepartmentSelection={handleDepartmentSelection}
-              selectedDepartment={selectedDepartment}
-            />
-          </div>
-          <div className="logout-container">
-          <button className="logout-button" onClick={handleLogout}>
-              <FaSignOutAlt /> Logout
-            </button>
-          </div>
-        </header>
-
-      <Banner announcements={announcements} />
+      <Banner announcements={announcements} selectedDepartment={selectedDepartment} />
 
       <div className="main-body">
-        {/* Left Sidebar (History) */}
-            <div className={`left-panel ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
-              <div className="history-header">
-                <h3 className={`history-title ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
-                  History
-                </h3>
-                <div className="sidebar-toggle" onClick={toggleLeftPanel}>
-                  {isLeftPanelCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+        {/* Left Sidebar */}
+        <div className={`left-panel ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
+          <div className="history-header">
+            <h3 className={`history-title ${isLeftPanelCollapsed ? 'collapsed' : ''}`}>
+              History
+            </h3>
+            <div className="sidebar-toggle" onClick={toggleLeftPanel}>
+              {isLeftPanelCollapsed ? <FaChevronRight /> : <FaChevronLeft />}
+            </div>
+          </div>
+
+          {!isLeftPanelCollapsed && (
+            <>
+              {/* Debug info */}
+              <div style={{ fontSize: '10px', color: '#999', padding: '5px' }}>
+                Sessions: {sessions.length}, Active: {activeSessionId}
+              </div>
+              
+              <ul>
+                {sessions.length === 0 && (
+                  <li style={{ color: '#999', fontSize: '12px', padding: '10px' }}>
+                    No sessions found. Creating default session...
+                  </li>
+                )}
+                {sessions.filter(session => session?.session_id).map((session) => {
+                  // console.log('Rendering session:', session);
+                  return (
+                    <li
+                      key={session.session_id}
+                      className={`conversation-item ${
+                        session.session_id === activeSessionId ? 'active-conversation' : ''
+                      }`}
+                      // onClick={() => {
+                      //   console.log('Switching to session:', session.session_id);
+                      //   setActiveSessionId(session.session_id);
+                      //   setSelectedDepartment(session.department || 'Human Resources');
+                      // }}
+                      onClick={() => {
+                        console.log('Switching to session:', session.session_id);
+                        handleSessionSwitch(session.session_id, session.department || 'Human Resources');
+                      }}
+                    >
+                      {editMode[session.session_id] ? (
+                        <div className="edit-conversation">
+                          <input
+                            type="text"
+                            defaultValue={session.title}
+                            onBlur={(e) =>
+                              handleEditSessionName(session.session_id, e.target.value)
+                            }
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <span>{session.title}</span>
+                          <button
+                            className="delete-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSession(session.session_id);
+                            }}
+                          >
+                            <Trash size={18} color="white" />
+                          </button>
+                        </>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+              
+              <button
+                className="add-conversation-button"
+                onClick={handleAddSession}
+                style={{ cursor: 'pointer' }}
+              >
+                <FaPlus /> Add Conversation
+              </button>
+
+              {/* Add Tools Component - Only for Marketing */}
+              {selectedDepartment === 'Marketing' && (
+                <Tools 
+                  selectedDepartment={selectedDepartment}
+                  onToolSelect={handleToolSelect}
+                />
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Chat Panel */}
+        <div className="chat-panel">
+          <div className="chat-history" ref={chatHistoryRef}>
+            {(activeSession?.messages || []).filter(msg => msg && typeof msg === 'object').map((msg, index)=> (
+              <div key={index} className="message-row">
+                {msg.sender === 'assistant' && (
+                  <CircularLogo isBotMessage={true} />
+                )}
+                <div
+                  className={`message ${
+                    msg.sender === 'user' ? 'user-message' : 'bot-message'
+                  }`}
+                >
+                  {/* Agent Indicator - Only show for assistant messages */}
+                  {msg.sender === 'assistant' && msg.agent_used && (
+                    <AgentIndicator 
+                      agentType={msg.agent_used} 
+                      isNewMessage={index === (activeSession?.messages || []).length - 1 && msg.sender === 'assistant'}
+                    />
+                  )}
+                  <MessageContent message={msg} />
+                  
+                  {/* Sources Display */}
+                  {msg.sender === 'assistant' && msg.sources && Array.isArray(msg.sources) && msg.sources.length > 0 && (
+                    <div className="message-sources">
+                      <div className="sources-header">Sources:</div>
+                      <ul className="sources-list">
+                        {msg.sources.map((source, idx) => {
+                          let sourceText = 'Document';
+                          try {
+                            if (typeof source === 'string') {
+                              sourceText = source;
+                            } else if (source && typeof source === 'object') {
+                              sourceText = source.document || source.title || 'Document';
+                            }
+                          } catch (e) {
+                            sourceText = 'Document';
+                          }
+                          
+                          return (
+                            <li key={idx} className="source-item">
+                              <span className="source-document">{sourceText}</span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+
+                  <div className="timestamp">{new Date(msg.timestamp).toLocaleString()}</div>
+
+                  {/* Feedback Section */}
+                  {msg.sender === 'assistant' && msg.response_id && !msg.feedbackSubmitted && (
+                    <div className="rating">
+                      <span>Rate the response:</span>
+                      <FaThumbsUp
+                        className="thumbs-up"
+                        onClick={() => handleRating(msg.response_id, true, msg.content, msg.content)}
+                      />
+                      <FaThumbsDown
+                        className="thumbs-down"
+                        onClick={() => handleRating(msg.response_id, false, msg.content, msg.content)}
+                      />
+                    </div>
+                  )}
+
+                  {/* Feedback Form */}
+                  {msg.sender === 'assistant' && msg.response_id && feedbackState[msg.response_id]?.isVisible && (
+                    <div className="feedback-form">
+                      <textarea
+                        placeholder="Add a comment (optional)"
+                        value={feedbackState[msg.response_id].comment}
+                        onChange={(e) => handleCommentChange(msg.response_id, e.target.value)}
+                      ></textarea>
+                      <button onClick={() => submitFeedback(msg.response_id)}>Submit Feedback</button>
+                    </div>
+                  )}
+
+                  {/* Feedback Confirmation */}
+                  {msg.sender === 'assistant' && msg.feedbackSubmitted && (
+                    <div className="feedback-confirmation">
+                      Thank you for your feedback!
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {!isLeftPanelCollapsed && (
-                <>
-                  <ul>
-                    {conversations.map((conversation) => (
-                      <li
-                        key={conversation.id}
-                        className={`conversation-item ${
-                          conversation.id === activeConversationId ? 'active-conversation' : ''
-                        }`}
-                        onClick={() => {
-                          setActiveConversationId(conversation.id);
-                          setSelectedDepartment(conversation.department || 'Human Resources');
-                        }}
-                      >
-                        {editMode[conversation.id] ? (
-                          <div className="edit-conversation">
-                            <input
-                              type="text"
-                              defaultValue={conversation.name}
-                              onBlur={(e) =>
-                                handleEditConversationName(conversation.id, e.target.value)
-                              }
-                            />
-                          </div>
-                        ) : (
-                          <>
-                            <span>{conversation.name}</span>
-                            <button
-                              className="delete-button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteConversation(conversation.id);
-                              }}
-                            >
-                              <Trash size={18} color="white" />
-                            </button>
-                          </>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                  <button
-                    className="add-conversation-button"
-                    onClick={() => handleAddConversation()}
-                  >
-                    <FaPlus /> Add Conversation
-                  </button>
-                </>
-              )}
-            </div>
-
-        {/* Chat Input Section */}
-        <div className="chat-panel">
-              <div className="chat-history" ref={chatHistoryRef}>
-                {activeConversation?.messages.map((msg, index) => (
-                  <div key={index} className="message-row">
-                    {msg.sender === 'AI Assistant' && (
-                      <CircularLogo isBotMessage={true} />
-                    )}
-                    <div
-                      className={`message ${
-                        msg.sender === 'user' ? 'user-message' : 'bot-message'
-                      }`}
-                    >
-                      {/* Render message text as Markdown */}
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: ({ node, ...props }) => (
-                            <a {...props} target="_blank" rel="noopener noreferrer" />
-                          ),
-                          table: ({ node, ...props }) => (
-                            <table {...props} style={{ border: '1px solid #dee2e6', borderCollapse: 'collapse' }} />
-                          ),
-                          th: ({ node, ...props }) => (
-                            <th {...props} style={{ backgroundColor: '#f2f2f2', padding: '8px', border: '1px solid #dee2e6' }} />
-                          ),
-                          td: ({ node, ...props }) => (
-                            <td {...props} style={{ padding: '8px', border: '1px solid #dee2e6' }} />
-                          ),
-                          strong: ({ node, ...props }) => (
-                            <strong {...props} style={{ fontWeight: 'bold' }} />
-                          ),
-                        }}
-                      >
-                        {msg.text}
-                      </ReactMarkdown>
-                      {/* Add Sources Display with updated logic */}
-                      {msg.sender === 'AI Assistant' && msg.sources && msg.sources.length > 0 && (
-                        <div className="message-sources">
-                          <div className="sources-header">Sources:</div>
-                          <ul className="sources-list">
-                            {msg.sources.map((source, idx) => (
-                              <li key={idx} className="source-item">
-                                {source.source_link ? (
-                                  // If source_link exists, only show the link
-                                  <a 
-                                    href={source.source_link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer" 
-                                    className="source-link"
-                                  >
-                                    View Document
-                                  </a>
-                                ) : (
-                                  // If no source_link, show document and page
-                                  <>
-                                    <span className="source-document">{source.document}</span>
-                                    {source.page && <span className="source-page"> (Page {source.page})</span>}
-                                  </>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-      
-                      <div className="timestamp">{new Date(msg.timestamp).toLocaleString()}</div>
-
-                      {/* Feedback Section for AI Assistant Messages */}
-                      {msg.sender === 'AI Assistant' && msg.response_id && !msg.feedbackSubmitted && (
-                        <div className="rating">
-                          <span>Rate the response:</span>
-                          <FaThumbsUp
-                            className="thumbs-up"
-                            onClick={() => handleRating(msg.response_id, true, msg.query, msg.text)}
-                          />
-                          <FaThumbsDown
-                            className="thumbs-down"
-                            onClick={() => handleRating(msg.response_id, false, msg.query, msg.text)}
-                          />
-                        </div>
-                      )}
-
-                      {/* Feedback Form */}
-                      {msg.sender === 'AI Assistant' && msg.response_id && feedbackState[msg.response_id]?.isVisible && (
-                        <div className="feedback-form">
-                          <textarea
-                            placeholder="Add a comment (optional)"
-                            value={feedbackState[msg.response_id].comment}
-                            onChange={(e) => handleCommentChange(msg.response_id, e.target.value)}
-                          ></textarea>
-                          <button onClick={() => submitFeedback(msg.response_id)}>Submit Feedback</button>
-                        </div>
-                      )}
-
-                      {/* Confirmation of Feedback Submission */}
-                      {msg.sender === 'AI Assistant' && msg.feedbackSubmitted && (
-                        <div className="feedback-confirmation">
-                          Thank you for your feedback!
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-                {isTyping && (
-                  <div className="typing-indicator">
-                    <div className="dot"></div>
-                    <div className="dot"></div>
-                    <div className="dot"></div>
-                  </div>
-                )}
+            ))}
+            {isTyping && (
+              <div className="typing-indicator">
+                <div className="dot"></div>
+                <div className="dot"></div>
+                <div className="dot"></div>
               </div>
-              <div className="chat-input">
-                <input
-                  type="text"
-                  value={userInput}
-                  onChange={(e) => setUserInput(e.target.value)}
-                  placeholder="Type your message..."
-                  onKeyPress={(e) => e.key === 'Enter' && debounceSendMessage()}
+            )}
+          </div>
+          
+          {/* Uploaded Files List - Only for Marketing - Above chat input */}
+          {/* {selectedDepartment === 'Marketing' && uploadedFiles.length > 0 && (
+            <div className="chat-uploaded-files">
+              <UploadedFiles 
+                files={uploadedFiles}
+                onRemoveFile={handleRemoveFile}
+                maxVisible={3}
+              />
+            </div>
+          )} */}
+          {selectedDepartment === 'Marketing' && uploadedFiles.filter(file => file.sessionId === activeSessionId).length > 0 && (
+              <div className="chat-uploaded-files">
+                <UploadedFiles 
+                  files={uploadedFiles.filter(file => file.sessionId === activeSessionId)}
+                  onRemoveFile={handleRemoveFile}
+                  maxVisible={3}
                 />
-                <button onClick={debounceSendMessage}>
-                  <FaPaperPlane />
-                </button>
               </div>
+            )}
+
+          {/* Progress bars for uploading files - Above chat input */}
+          {Object.keys(uploadProgress).length > 0 && (
+            <div className="chat-upload-progress">
+              {Object.values(uploadProgress).map(({ file, progress, status }) => (
+                <ProgressBar
+                  key={file.id}
+                  file={file}
+                  progress={progress}
+                  status={status}
+                  onCancel={handleCancelUpload}
+                />
+              ))}
             </div>
+          )}
+
+          <div className="chat-input">
+            {/* Add Upload Button for Marketing */}
+            {selectedDepartment === 'Marketing' && (
+              <UploadButton 
+                onFileUpload={handleFileUpload}
+                onUploadProgress={handleUploadProgress}
+                disabled={isTyping}
+              />
+            )}
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Type your message..."
+              onKeyPress={(e) => e.key === 'Enter' && debounceSendMessage()}
+            />
+            <button onClick={debounceSendMessage}>
+              <FaPaperPlane />
+            </button>
+          </div>
+        </div>
 
         {isRightPanelVisible && (
           <div className="right-panel">
-            <h3>Proposal Details</h3>
-            <p>Here you can find information related to the proposal process.</p>
+            <h3>Additional Features</h3>
+            <p>Future enhancements and integrations will appear here.</p>
           </div>
         )}
       </div>
+      
       <div className="footer-panel">
-          <Footer />
-      </div>  
-        </>
-      </AuthenticatedTemplate>
-
+        <Footer />
+      </div>
     </div>
   );
 }

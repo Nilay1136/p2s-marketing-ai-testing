@@ -1,0 +1,226 @@
+/* Tools Container */
+.tools-container {
+  margin-top: 20px;
+  background-color: rgb(229, 231, 230);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgb(52, 106, 134);
+  width: 100%; /* Match the width of History section */
+}
+
+/* Tools Header */
+.tools-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  background-color: rgba(52, 106, 134, 0.1);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-bottom: 1px solid rgba(52, 106, 134, 0.2);
+}
+
+.tools-header:hover {
+  background-color: rgba(52, 106, 134, 0.15);
+}
+
+.tools-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tools-title .tools-icon {
+  color: rgb(52, 106, 134);
+  font-size: 16px;
+}
+
+.tools-title h3 {
+  color: rgb(35, 21, 32);
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.tools-toggle {
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+  transition: transform 0.3s ease;
+}
+
+/* Tools Content */
+.tools-content {
+  padding: 10px;
+  background-color: rgb(229, 231, 230);
+}
+
+.tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Tool Item */
+.tool-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.tool-item:hover:not(.disabled) {
+  background-color: rgb(35, 21, 32);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(52, 106, 134, 0.3);
+}
+
+.tool-item.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: rgba(52, 106, 134, 0.7);
+}
+
+.tool-item.coming-soon {
+  background: linear-gradient(135deg, rgb(52, 106, 134), rgba(52, 106, 134, 0.8));
+  border: 1px solid rgba(229, 231, 230, 0.3);
+}
+
+.tool-item.coming-soon:hover {
+  background: linear-gradient(135deg, rgb(35, 21, 32), rgba(35, 21, 32, 0.9));
+}
+
+/* Tool Icon */
+.tool-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  color: inherit;
+  flex-shrink: 0;
+}
+
+/* Tool Details */
+.tool-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tool-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coming-soon-badge {
+  font-size: 10px;
+  color: rgba(229, 231, 230, 0.8);
+  font-style: italic;
+  font-weight: normal;
+}
+
+/* No Tools Message */
+.no-tools {
+  text-align: center;
+  padding: 20px;
+  color: rgb(52, 106, 134);
+}
+
+.no-tools p {
+  margin: 0;
+  font-size: 14px;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tools-header {
+    padding: 10px 12px;
+  }
+  
+  .tools-title h3 {
+    font-size: 14px;
+  }
+  
+  .tool-item {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .tool-name {
+    font-size: 12px;
+  }
+  
+  .coming-soon-badge {
+    font-size: 9px;
+  }
+}
+
+/* Animation for expanding/collapsing */
+.tools-content {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tooltip-like behavior on hover for tool descriptions */
+.tool-item::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+  margin-bottom: 5px;
+}
+
+.tool-item::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.9);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+}
+
+.tool-item:hover::before,
+.tool-item:hover::after {
+  opacity: 1;
+}

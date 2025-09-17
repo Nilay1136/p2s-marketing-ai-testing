@@ -792,3 +792,466 @@ body, html {
 .source-link:hover {
   text-decoration: underline;
 }
+
+/* Upload Progress Container */
+.upload-progress-container {
+  padding: 10px 20px 0;
+  background-color: rgb(229, 231, 230);
+  border-bottom: 1px solid rgba(52, 106, 134, 0.2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* When no progress bars, hide the container */
+.upload-progress-container:empty {
+  display: none;
+  padding: 0;
+  border: none;
+}
+
+/* Smooth transition for progress container */
+.upload-progress-container {
+  transition: all 0.3s ease;
+}
+/* Upload Progress Container - Above Chat Input */
+.chat-upload-progress {
+  padding: 10px 20px;
+  background-color: rgb(229, 231, 230);
+  border-top: 1px solid rgba(52, 106, 134, 0.2);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* Uploaded Files Container - Above Chat Input */
+.chat-uploaded-files {
+  padding: 10px 20px;
+  background-color: rgb(229, 231, 230);
+  border-top: 1px solid rgba(52, 106, 134, 0.2);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* When no progress bars or files, hide the containers */
+.chat-upload-progress:empty,
+.chat-uploaded-files:empty {
+  display: none;
+  padding: 0;
+  border: none;
+}
+
+/* Smooth transition for containers */
+.chat-upload-progress,
+.chat-uploaded-files {
+  transition: all 0.3s ease;
+}
+
+/* Adjust uploaded files component for chat area */
+.chat-uploaded-files .uploaded-files-container {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+}
+
+.chat-uploaded-files .uploaded-files-header {
+  background-color: transparent;
+  border-bottom: 1px solid rgba(52, 106, 134, 0.2);
+  padding: 8px 0;
+}
+
+/* Adjust progress bar for chat area */
+.chat-upload-progress .progress-bar-container {
+  margin-bottom: 8px;
+}
+
+.chat-upload-progress .progress-bar-container:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chat-upload-progress,
+  .chat-uploaded-files {
+    padding: 8px 15px;
+    max-height: 150px;
+  }
+}
+
+/* Add to your App.css or create a new CSS file */
+.response-content {
+  line-height: 1.6;
+}
+
+.response-content h1,
+.response-content h2,
+.response-content h3 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  color: #2c5aa0;
+}
+
+.response-content ul {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.response-content li {
+  margin: 0.3em 0;
+}
+
+.response-content .section-number {
+  font-weight: bold;
+  color: #2c5aa0;
+}
+
+.response-content .subsection {
+  margin-left: 1em;
+  border-left: 2px solid #e0e0e0;
+  padding-left: 1em;
+}
+
+/* Add to your App.css */
+.message .bot-message h3 {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 10px 0 5px 0;
+  color: #2c5aa0;
+}
+
+.message .bot-message h4 {
+  font-size: 1.0em;
+  font-weight: bold;
+  margin: 8px 0 4px 0;
+  color: #3a6bb3;
+}
+
+.message .bot-message ul {
+  margin: 5px 0 10px 20px;
+}
+
+.message .bot-message li {
+  margin: 2px 0;
+}
+
+/* Add these enhanced markdown formatting styles to your existing App.css */
+
+/* Bot message content formatting */
+.bot-message {
+  align-self: flex-start;
+  margin-right: auto;
+  background-color: rgb(52, 106, 134);
+  color: white;
+  border-radius: 0px 12px 12px 12px;
+  line-height: 1.6;
+  font-family: 'GT Walsheim', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Enhanced markdown formatting for bot responses */
+.bot-message h1,
+.bot-message h2,
+.bot-message h3,
+.bot-message h4,
+.bot-message h5,
+.bot-message h6 {
+  color: #f0f8ff;
+  margin: 16px 0 8px 0;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.bot-message h1 {
+  font-size: 1.3em;
+  border-bottom: 2px solid rgba(240, 248, 255, 0.3);
+  padding-bottom: 4px;
+}
+
+.bot-message h2 {
+  font-size: 1.2em;
+  border-bottom: 1px solid rgba(240, 248, 255, 0.2);
+  padding-bottom: 3px;
+}
+
+.bot-message h3 {
+  font-size: 1.1em;
+  color: #e6f3ff;
+}
+
+.bot-message h4 {
+  font-size: 1.05em;
+  color: #ddeeff;
+}
+
+.bot-message h5,
+.bot-message h6 {
+  font-size: 1em;
+  color: #ccddff;
+}
+
+/* Paragraph spacing */
+.bot-message p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+/* List formatting */
+.bot-message ul,
+.bot-message ol {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.bot-message li {
+  margin: 6px 0;
+  line-height: 1.5;
+}
+
+.bot-message ul li {
+  list-style-type: disc;
+}
+
+.bot-message ol li {
+  list-style-type: decimal;
+}
+
+/* Nested lists */
+.bot-message ul ul,
+.bot-message ol ol,
+.bot-message ul ol,
+.bot-message ol ul {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.bot-message ul ul li {
+  list-style-type: circle;
+}
+
+.bot-message ul ul ul li {
+  list-style-type: square;
+}
+
+/* Strong and emphasis */
+.bot-message strong {
+  font-weight: 700;
+  color: #f0f8ff;
+}
+
+.bot-message em {
+  font-style: italic;
+  color: #e6f3ff;
+}
+
+/* Code formatting */
+.bot-message code {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #f0f8ff;
+}
+
+.bot-message pre {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.bot-message pre code {
+  background: none;
+  padding: 0;
+}
+
+/* Blockquotes */
+.bot-message blockquote {
+  border-left: 4px solid rgba(240, 248, 255, 0.5);
+  padding-left: 16px;
+  margin: 12px 0;
+  font-style: italic;
+  color: #e6f3ff;
+}
+
+/* Tables */
+.bot-message table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 12px 0;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.bot-message th,
+.bot-message td {
+  border: 1px solid rgba(240, 248, 255, 0.3);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.bot-message th {
+  background-color: rgba(240, 248, 255, 0.2);
+  font-weight: 600;
+  color: #f0f8ff;
+}
+
+/* Links */
+.bot-message a {
+  color: #add8e6;
+  text-decoration: underline;
+}
+
+.bot-message a:hover {
+  color: #87ceeb;
+  text-decoration: none;
+}
+
+/* Horizontal rules */
+.bot-message hr {
+  border: none;
+  border-top: 1px solid rgba(240, 248, 255, 0.3);
+  margin: 16px 0;
+}
+
+/* Section dividers for SOQ-style content */
+.bot-message .section-divider {
+  border-top: 2px solid rgba(240, 248, 255, 0.4);
+  margin: 20px 0 16px 0;
+  padding-top: 12px;
+}
+
+/* Improve readability for structured content */
+.bot-message .structured-content {
+  line-height: 1.7;
+}
+
+.bot-message .section-number {
+  font-weight: 700;
+  color: #f0f8ff;
+}
+
+.bot-message .subsection {
+  margin-left: 16px;
+  border-left: 2px solid rgba(240, 248, 255, 0.3);
+  padding-left: 12px;
+  margin-bottom: 12px;
+}
+
+/* Fix for very long content */
+.bot-message {
+  max-width: 70%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Ensure proper spacing between elements */
+.bot-message > *:first-child {
+  margin-top: 0;
+}
+
+.bot-message > *:last-child {
+  margin-bottom: 0;
+}
+
+
+/* Agent Badge Container */
+.agent-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Agent-specific color schemes */
+.agent-indicator.soq {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  color: white;
+}
+
+.agent-indicator.social_posts {
+  background: linear-gradient(135deg, #ec4899, #f472b6);
+  color: white;
+}
+
+.agent-indicator.loi {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+}
+
+.agent-indicator.project_approach {
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  color: white;
+}
+
+.agent-indicator.file_ingestion {
+  background: linear-gradient(135deg, #6b7280, #9ca3af);
+  color: white;
+}
+
+/* Agent Icon */
+.agent-icon {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Agent Name */
+.agent-name {
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* Hover effects */
+.agent-indicator:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+/* Pulse animation for new messages */
+.agent-indicator.new-message {
+  animation: agentPulse 0.6s ease-out;
+}
+
+@keyframes agentPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .agent-indicator {
+    font-size: 10px;
+    padding: 3px 6px;
+    gap: 4px;
+  }
+  
+  .agent-icon {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .agent-name {
+    font-size: 9px;
+  }
+}
