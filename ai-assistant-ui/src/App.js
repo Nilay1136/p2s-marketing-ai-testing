@@ -124,11 +124,11 @@ const DepartmentList = ({
   selectedDepartment
 }) => {
   const departments = [
-    { name: 'Human Resources', enabled: true },
+    { name: 'Human Resources', enabled: false },
     { name: 'Project Management', enabled: false },
     { name: 'Engineering', enabled: false },
     { name: 'BIM', enabled: false },
-    { name: 'Marketing', enabled: true },
+    { name: 'Marketing', enabled: true }, //isolated for testing
     { name: 'IT', enabled: false },
   ];
 
@@ -524,7 +524,7 @@ function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [isDepartmentListVisible, setIsDepartmentListVisible] = useState(false);
   const [isLeftPanelCollapsed, setIsLeftPanelCollapsed] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState('Human Resources');
+  const [selectedDepartment, setSelectedDepartment] = useState('Marketing'); //isolated for testingg
   const [isRightPanelVisible, setIsRightPanelVisible] = useState(false);
   const [editMode, setEditMode] = useState({});
   const [feedbackState, setFeedbackState] = useState({});
@@ -566,11 +566,15 @@ function App() {
 
       console.log('Load sessions response:', response.data);
       const fetchedSessions = response.data.sessions || [];
-      setSessions(fetchedSessions);
+      // Filter only Marketing sessions
+      const marketingSessions = fetchedSessions.filter(session => 
+        session.department === 'Marketing' || !session.department
+      );
+      setSessions(marketingSessions);
 
-      if (fetchedSessions.length > 0) {
-        console.log('Setting active session to:', fetchedSessions[0].session_id);
-        setActiveSessionId(fetchedSessions[0].session_id);
+      if (marketingSessions.length > 0) {
+        console.log('Setting active session to:', marketingSessions[0].session_id);
+        setActiveSessionId(marketingSessions[0].session_id);
       } else {
         console.log('No existing sessions, creating default session');
         await createNewSession();
@@ -664,8 +668,10 @@ function App() {
     
     const fallbackSession = {
       session_id: `local-${Date.now()}`,
-      title: `${selectedDepartment} Chat`,
-      department: selectedDepartment,
+      title: `Marketing Chat`,
+      department: 'Marketing',
+      // title: `${selectedDepartment} Chat`,
+      // department: selectedDepartment,
       messages: [],
       created_at: new Date().toISOString(),
       last_activity: new Date().toISOString()
@@ -681,205 +687,11 @@ function App() {
     setActiveSessionId(fallbackSession.session_id);
     console.log('Set active session ID to fallback:', fallbackSession.session_id);
     
-    toast.warning("Created local session (API unavailable)");
+    // toast.warning("Created local session (API unavailable)");
+    toast.success("Welcome to Marketing AI Assistant!");
   };
 
-  // const handleSendMessage = useCallback(async () => {
-  //   if (userInput.trim() === '' || !activeSessionId) return;
 
-  //   const messageText = userInput.trim();
-  //   setUserInput('');
-  //   setIsTyping(true);
-
-  //   // Add user message to UI immediately
-  //   const userMessage = {
-  //     sender: 'user',
-  //     content: messageText,
-  //     timestamp: new Date().toISOString()
-  //   };
-
-  //   setSessions(prevSessions =>
-  //     prevSessions.map(session =>
-  //       session.session_id === activeSessionId
-  //         ? { ...session, messages: [...(session.messages || []), userMessage] }
-  //         : session
-  //     )
-  //   );
-
-  //   try {
-  //     // Prepare files for backend if any exist
-  //     const filesData = (uploadedFiles || []).filter(file => file?.id).map(file => {
-  //       let base64Content = '';
-        
-  //       if (file.content && file.content.length > 0) {
-  //         const binaryString = String.fromCharCode(...file.content);
-  //         base64Content = btoa(binaryString);
-  //       }
-        
-  //       return {
-  //         filename: file.name,
-  //         content: base64Content,
-  //         content_type: file.type,
-  //         size: file.size,
-  //         // Add these required fields:
-  //         file_size: file.size,    // Backend expects this field
-  //         file_type: file.type     // Backend expects this field
-  //       };
-  //     });
-
-  //     const chatRequest = {
-  //       session_id: activeSessionId,
-  //       user_id: user.user_id,
-  //       message: messageText,
-  //       files: filesData.length > 0 ? filesData : undefined,
-  //       agent_preference: DEPARTMENT_AGENT_MAP[selectedDepartment]
-  //     };
-
-  //     console.log('Sending chat request:', chatRequest);
-
-  //     const response = await axios.post(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.CHAT}`, chatRequest, {
-  //       headers: {
-  //         'Authorization': `Bearer ${accessToken}`,
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
-
-  //     console.log('Chat response received:', response.data);
-
-  //     // Add assistant response to UI
-  //     const assistantMessage = {
-  //       sender: 'assistant',
-  //       content: response.data.response,
-  //       timestamp: new Date().toISOString(),
-  //       response_id: response.data.response_id,
-  //       agent_used: response.data.agent_used,
-  //       sources: response.data.sources || [],
-  //       generated_files: response.data.generated_files || [],
-  //       feedbackSubmitted: false
-  //     };
-
-  //     setSessions(prevSessions =>
-  //       prevSessions.map(session =>
-  //         session.session_id === activeSessionId
-  //           ? { ...session, messages: [...session.messages, assistantMessage] }
-  //           : session
-  //       )
-  //     );
-
-  //     // Clear uploaded files after successful send
-  //     setUploadedFiles([]);
-
-  //   } catch (error) {
-  //     console.error("Error sending message:", error);
-      
-  //     const errorMessage = {
-  //       sender: 'assistant',
-  //       content: `I encountered an error processing your request. This is a demo mode - backend may not be available. Error: ${error.response?.status || 'Connection failed'}`,
-  //       timestamp: new Date().toISOString(),
-  //       response_id: null,
-  //       feedbackSubmitted: false
-  //     };
-
-  //     setSessions(prevSessions =>
-  //       prevSessions.map(session =>
-  //         session.session_id === activeSessionId
-  //           ? { ...session, messages: [...session.messages, errorMessage] }
-  //           : session
-  //       )
-  //     );
-
-  //     toast.error(`Demo mode: Backend not available (${error.response?.status || 'Connection Error'})`);
-  //   } finally {
-  //     setIsTyping(false);
-  //   }
-  // },[userInput, activeSessionId, uploadedFiles]);
-//   const handleSendMessage = useCallback(async () => {
-//   if (userInput.trim() === '' || !activeSessionId) return;
-
-//   const messageText = userInput.trim();
-//   setUserInput('');
-//   setIsTyping(true);
-
-//   // Add user message
-//   setSessions(prevSessions =>
-//     prevSessions.map(session =>
-//       session.session_id === activeSessionId
-//         ? { ...session, messages: [...(session.messages || []), {
-//             sender: 'user',
-//             content: messageText,
-//             timestamp: new Date().toISOString()
-//           }] }
-//         : session
-//     )
-//   );
-
-//   try {
-//     console.log('Uploaded files before sending:', uploadedFiles); // Debug
-//     console.log('Active session ID:', activeSessionId);
-//     console.log('File session IDs:', uploadedFiles.map(f => f.sessionId));
-
-//     // Process files from uploadedFiles state
-//     // In handleSendMessage, replace the file processing section with:
-// const filesData = [];
-// if (uploadedFiles && uploadedFiles.length > 0) {
-//   for (const file of uploadedFiles) {
-//     if (file?.content && file?.name) {
-//       try {
-//         // Simple approach - convert Uint8Array directly to base64
-//         let base64Content = '';
-//         if (file.content instanceof Uint8Array) {
-//           const binaryString = Array.from(file.content, byte => String.fromCharCode(byte)).join('');
-//           base64Content = btoa(binaryString);
-//         }
-        
-//         if (base64Content) {
-//           filesData.push({
-//             filename: file.name,
-//             content: base64Content,
-//             content_type: file.type || 'application/pdf',
-//             size: file.size || file.content.length
-//           });
-//         }
-//       } catch (e) {
-//         console.warn('Failed to process file:', file.name, e);
-//       }
-//     }
-//   }
-// }
-
-//     console.log('Files being sent to backend:', filesData.length); // Debug
-
-//     const chatRequest = {
-//       session_id: activeSessionId,
-//       user_id: user.user_id,
-//       message: messageText,
-//       files: filesData.length > 0 ? filesData : undefined,
-//       agent_preference: DEPARTMENT_AGENT_MAP[selectedDepartment]
-//     };
-
-//     const response = await axios.post(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.CHAT}`, chatRequest);
-
-//     // Add response
-//     setSessions(prevSessions =>
-//       prevSessions.map(session =>
-//         session.session_id === activeSessionId
-//           ? { ...session, messages: [...session.messages, {
-//               sender: 'assistant',
-//               content: response.data.response,
-//               timestamp: new Date().toISOString(),
-//               response_id: response.data.response_id,
-//               sources: response.data.sources || []
-//             }] }
-//           : session
-//       )
-//     );
-
-//   } catch (error) {
-//     console.error("Error:", error);
-//   } finally {
-//     setIsTyping(false);
-//   }
-// }, [userInput, activeSessionId, uploadedFiles]);
 const handleSendMessage = useCallback(async () => {
   if (userInput.trim() === '' || !activeSessionId) return;
 
@@ -1051,6 +863,13 @@ const handleSendMessage = useCallback(async () => {
   };
 
   const handleDepartmentSelection = (department) => {
+
+    // Only allow Marketing
+    if (department !== 'Marketing') {
+      toast.info("Only Marketing is available in this version");
+      setIsDepartmentListVisible(false);
+      return;
+    }
     if (department === selectedDepartment) {
       setIsDepartmentListVisible(false);
       return;
