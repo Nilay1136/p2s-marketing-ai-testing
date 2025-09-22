@@ -506,7 +506,26 @@ function App() {
   const [sessions, setSessions] = useState([]);
   
   // Hardcoded user for demo - no auth required
-  const [user] = useState({ username: "Demo User", user_id: "demo-user-123" }); 
+  // const [user] = useState({ username: "Demo User", user_id: "demo-user-123" }); 
+  // const [accessToken] = useState('demo-token'); 
+  // const isAuthenticated = true;
+
+  // Generate or retrieve unique user ID from localStorage
+  const [user] = useState(() => {
+    let storedUser = localStorage.getItem('demo_user');
+    if (storedUser) {
+      return JSON.parse(storedUser);
+    }
+    // Generate new unique user
+    const newUser = {
+      username: `Demo User ${Math.random().toString(36).substr(2, 4).toUpperCase()}`,
+      user_id: `demo-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    };
+    // Store in localStorage for persistence across page refreshes
+    localStorage.setItem('demo_user', JSON.stringify(newUser));
+    return newUser;
+  });
+
   const [accessToken] = useState('demo-token'); 
   const isAuthenticated = true;
 
