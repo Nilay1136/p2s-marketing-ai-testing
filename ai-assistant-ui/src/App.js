@@ -13,6 +13,8 @@ import {
   FaSignOutAlt,
   FaSignInAlt
 } from 'react-icons/fa';
+import { FaFile } from 'react-icons/fa';
+import DocumentViewer from './DocumentViewer';
 import logo from './P2S_Legence_Logo_White.png';
 import { API_ENDPOINTS, DEPARTMENT_AGENT_MAP } from './apiConfig'; 
 import ReactMarkdown from 'react-markdown';
@@ -550,6 +552,8 @@ function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
   const chatHistoryRef = useRef(null);
+  const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
+  const [viewingSessionDocs, setViewingSessionDocs] = useState(null);
 
   // Load sessions on startup
   useEffect(() => {
@@ -587,7 +591,7 @@ function App() {
       const fetchedSessions = response.data.sessions || [];
       // Filter only Marketing sessions
       const marketingSessions = fetchedSessions.filter(session => 
-        session.department === 'Marketing' || !session.department
+        session.department === 'Marketing' || !session.department //isolates marketing (testing)
       );
       setSessions(marketingSessions);
 
@@ -839,6 +843,11 @@ const handleSendMessage = useCallback(async () => {
 
   const debounceSendMessage = useCallback(debounce(handleSendMessage, 300), [handleSendMessage]);
 
+  const handleShowDocuments = (session) => {
+    setViewingSessionDocs(session);
+    setDocumentViewerOpen(true);
+  };
+
   const handleDeleteSession = async (sessionId) => {
     console.log('Deleting session:', sessionId);
     
@@ -918,15 +927,39 @@ const handleSendMessage = useCallback(async () => {
         size: file.size,
         type: file.type,
         name: file.name,
-        sessionId: activeSessionId
+        sessionId: activeSessionId,
+        filename: file.name,  // Add this for DocumentViewer
+        file_type: file.type,  // Add this for DocumentViewer
+        status: 'uploaded'     // Add this for DocumentViewer
       };
       
       setUploadedFiles(prev => [...prev, enhancedFileData]);
+      setSessions(prevSessions =>
+      prevSessions.map(session =>
+        session.session_id === activeSessionId
+          ? {
+              ...session,
+              processed_files: [
+                ...(session.processed_files || []),
+                {
+                  filename: file.name,
+                  size: file.size,
+                  file_type: file.type,
+                  status: 'uploaded',
+                  // Don't include the binary content here to save memory
+                  text_content: null  // Will be populated by backend if it extracts text
+                }
+              ]
+            }
+          : session
+      )
+    );
       setUploadProgress(prev => {
         const updated = { ...prev };
         delete updated[enhancedFileData.id];
         return updated;
       });
+      toast.success(`${file.name} uploaded successfully!`);
     } catch (error) {
       console.error('Error processing uploaded file:', error);
       toast.error('Failed to process uploaded file');
@@ -1128,7 +1161,8 @@ const handleSessionSwitch = (sessionId, department) => {
                       // }}
                       onClick={() => {
                         console.log('Switching to session:', session.session_id);
-                        handleSessionSwitch(session.session_id, session.department || 'Human Resources');
+                        handleSessionSwitch(session.session_id, session.department || 'Marketing');
+                        //handleSessionSwitch(session.session_id, session.department || 'Human Resources');
                       }}
                     >
                       {editMode[session.session_id] ? (
@@ -1143,23 +1177,35 @@ const handleSessionSwitch = (sessionId, department) => {
                         </div>
                       ) : (
                         <>
-                          <span>{session.title}</span>
-                          <button
-                            className="delete-button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteSession(session.session_id);
-                            }}
-                          >
-                            <Trash size={18} color="white" />
-                          </button>
-                        </>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-              
+                        <span>{session.title}</span>
+                    <div className="session-actions">
+                      <button
+                        className="show-docs-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShowDocuments(session);
+                        }}
+                        title="Show documents"
+                      >
+                        <FaFile size={14} />
+                      </button>
+                      <button
+                        className="delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSession(session.session_id);
+                        }}
+                      >
+                        <Trash size={18} color="white" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
               <button
                 className="add-conversation-button"
                 onClick={handleAddSession}
@@ -1232,7 +1278,7 @@ const handleSessionSwitch = (sessionId, department) => {
                   <div className="timestamp">{new Date(msg.timestamp).toLocaleString()}</div>
 
                   {/* Feedback Section */}
-                  {msg.sender === 'assistant' && msg.response_id && !msg.feedbackSubmitted && (
+                  {/* {msg.sender === 'assistant' && msg.response_id && !msg.feedbackSubmitted && (
                     <div className="rating">
                       <span>Rate the response:</span>
                       <FaThumbsUp
@@ -1244,7 +1290,7 @@ const handleSessionSwitch = (sessionId, department) => {
                         onClick={() => handleRating(msg.response_id, false, msg.content, msg.content)}
                       />
                     </div>
-                  )}
+                  )} */}
 
                   {/* Feedback Form */}
                   {msg.sender === 'assistant' && msg.response_id && feedbackState[msg.response_id]?.isVisible && (
@@ -1344,6 +1390,12 @@ const handleSessionSwitch = (sessionId, department) => {
       <div className="footer-panel">
         <Footer />
       </div>
+      <DocumentViewer 
+        isOpen={documentViewerOpen}
+        onClose={() => setDocumentViewerOpen(false)}
+        documents={viewingSessionDocs?.processed_files || []}
+        sessionTitle={viewingSessionDocs?.title || 'Session'}
+      />
     </div>
   );
 }
