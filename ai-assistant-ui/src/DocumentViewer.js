@@ -69,7 +69,7 @@ const DocumentViewer = ({ isOpen, onClose, documents, sessionTitle }) => {
     return (
       <div className="no-preview">
         <FaFile className="no-preview-icon" />
-        <p>Preview not available for this file type</p>
+        <p>This feature is coming soon!!</p>
         <p className="file-info">{doc.filename} ({formatFileSize(doc.size)})</p>
       </div>
     );
