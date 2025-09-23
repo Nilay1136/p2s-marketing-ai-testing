@@ -1,4 +1,10 @@
-// User Guide Content for the Marketing AI Assistant
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { FaQuestionCircle, FaTimes } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import './FloatingHelp.css';
+
+// Import the user guide content directly
 const userGuideContent = `# AI Assistant UI - User Guide
 
 ## Table of Contents
@@ -302,4 +308,173 @@ For additional support or feature requests:
 
 *This guide covers the current version of the Marketing AI Assistant. Features and functionality may be updated over time. Check for the latest version of this guide when new features are released.*`;
 
-export default userGuideContent;
+const FloatingHelp = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 20, y: 200 }); // Start in middle-left area
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const buttonRef = useRef(null);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  // Handle mouse down for dragging
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return; // Only handle left mouse button
+    
+    setIsDragging(true);
+    const rect = buttonRef.current.getBoundingClientRect();
+    setDragStart({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+    e.preventDefault();
+  };
+
+  // Handle mouse move for dragging
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+
+    // Keep button within viewport bounds
+    const buttonSize = 60;
+    const maxX = window.innerWidth - buttonSize;
+    const maxY = window.innerHeight - buttonSize;
+
+    setPosition({
+      x: Math.max(0, Math.min(maxX, newX)),
+      y: Math.max(0, Math.min(maxY, newY))
+    });
+  }, [isDragging, dragStart]);
+
+  // Handle mouse up for dragging
+  const handleMouseUp = useCallback((e) => {
+    if (isDragging) {
+      setIsDragging(false);
+      // If it was just a click (not much movement), open modal
+      const moveDistance = Math.sqrt(
+        Math.pow(e.clientX - (position.x + dragStart.x), 2) +
+        Math.pow(e.clientY - (position.y + dragStart.y), 2)
+      );
+      
+      if (moveDistance < 5) { // Less than 5px movement = click
+        openModal();
+      }
+    }
+  }, [isDragging, position, dragStart]);
+
+  // Add/remove event listeners for dragging
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = 'none'; // Prevent text selection while dragging
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.userSelect = '';
+    };
+  }, [isDragging, handleMouseMove, handleMouseUp]);
+
+  // Close modal when clicking the overlay
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  };
+
+  // Handle escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        closeModal();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isModalOpen]);
+
+  return (
+    <>
+      {/* Floating Help Button */}
+      <button 
+        ref={buttonRef}
+        className={`floating-help-button ${isDragging ? 'dragging' : ''}`}
+        onMouseDown={handleMouseDown}
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+        title="Help & User Guide (Drag to move)"
+        aria-label="Open help guide - draggable"
+      >
+        <FaQuestionCircle />
+      </button>
+
+      {/* Modal Overlay */}
+      {isModalOpen && (
+        <div className="help-modal-overlay" onClick={handleOverlayClick}>
+          <div className="help-modal">
+            {/* Modal Header */}
+            <div className="help-modal-header">
+              <h2>Marketing AI Assistant - User Guide</h2>
+              <button 
+                className="help-modal-close"
+                onClick={closeModal}
+                aria-label="Close help guide"
+              >
+                <FaTimes />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="help-modal-content">
+              <ReactMarkdown 
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  // Custom heading styling
+                  h1: ({children}) => <h1 className="help-h1">{children}</h1>,
+                  h2: ({children}) => <h2 className="help-h2">{children}</h2>,
+                  h3: ({children}) => <h3 className="help-h3">{children}</h3>,
+                  h4: ({children}) => <h4 className="help-h4">{children}</h4>,
+                  // Custom link styling
+                  a: ({href, children}) => (
+                    <a href={href} className="help-link" target="_blank" rel="noopener noreferrer">
+                      {children}
+                    </a>
+                  ),
+                  // Custom code styling
+                  code: ({children, className}) => (
+                    <code className={`help-code ${className || ''}`}>
+                      {children}
+                    </code>
+                  ),
+                  // Custom blockquote styling
+                  blockquote: ({children}) => (
+                    <blockquote className="help-blockquote">
+                      {children}
+                    </blockquote>
+                  )
+                }}
+              >
+                {userGuideContent}
+              </ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+export default FloatingHelp;

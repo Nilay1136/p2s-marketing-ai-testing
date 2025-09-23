@@ -1,0 +1,367 @@
+/* Floating Help Component Styles - Matching App.css branding */
+
+/* Floating Help Button */
+.floating-help-button {
+  position: fixed;
+  /* Remove bottom/right positioning - now controlled by JavaScript */
+  width: 60px;
+  height: 60px;
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(52, 106, 134, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  font-family: 'GT Walsheim', sans-serif;
+  user-select: none;
+  touch-action: none; /* Prevent touch scrolling while dragging */
+}
+
+.floating-help-button:hover {
+  background-color: rgb(35, 21, 32);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(35, 21, 32, 0.4);
+}
+
+.floating-help-button:active,
+.floating-help-button.dragging {
+  transform: translateY(0);
+  cursor: grabbing;
+  box-shadow: 0 8px 20px rgba(35, 21, 32, 0.5);
+  transition: box-shadow 0.1s ease; /* Faster transition while dragging */
+}
+
+/* Dragging state styling */
+.floating-help-button.dragging {
+  background-color: rgb(35, 21, 32);
+  transform: scale(1.05);
+}
+
+/* Modal Overlay */
+.help-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(35, 21, 32, 0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+/* Modal Container */
+.help-modal {
+  background-color: rgb(229, 231, 230);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 900px;
+  height: 85vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(35, 21, 32, 0.3);
+  font-family: 'GT Walsheim', sans-serif;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Modal Header */
+.help-modal-header {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgb(35, 21, 32);
+}
+
+.help-modal-header h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.help-modal-close {
+  background: none;
+  border: none;
+  color: rgb(229, 231, 230);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.help-modal-close:hover {
+  background-color: rgba(229, 231, 230, 0.1);
+}
+
+/* Modal Content */
+.help-modal-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: rgb(229, 231, 230);
+  line-height: 1.6;
+}
+
+/* Typography Styles - Matching App.css color scheme */
+.help-modal-content .help-h1 {
+  color: rgb(35, 21, 32);
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 0 24px 0;
+  padding-bottom: 12px;
+  border-bottom: 3px solid rgb(52, 106, 134);
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.help-modal-content .help-h2 {
+  color: rgb(52, 106, 134);
+  font-size: 24px;
+  font-weight: bold;
+  margin: 32px 0 16px 0;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.help-modal-content .help-h3 {
+  color: rgb(35, 21, 32);
+  font-size: 20px;
+  font-weight: 600;
+  margin: 24px 0 12px 0;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.help-modal-content .help-h4 {
+  color: rgb(52, 106, 134);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 20px 0 10px 0;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+/* Paragraph and Text */
+.help-modal-content p {
+  color: rgb(35, 21, 32);
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+/* Lists */
+.help-modal-content ul,
+.help-modal-content ol {
+  color: rgb(35, 21, 32);
+  margin-bottom: 16px;
+  padding-left: 24px;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.help-modal-content li {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+/* Strong text */
+.help-modal-content strong {
+  color: rgb(52, 106, 134);
+  font-weight: bold;
+}
+
+/* Links */
+.help-modal-content .help-link {
+  color: rgb(52, 106, 134);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.help-modal-content .help-link:hover {
+  color: rgb(35, 21, 32);
+  text-decoration: underline;
+}
+
+/* Code blocks */
+.help-modal-content .help-code {
+  background-color: rgba(52, 106, 134, 0.1);
+  color: rgb(35, 21, 32);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  border: 1px solid rgba(52, 106, 134, 0.2);
+}
+
+/* Blockquotes */
+.help-modal-content .help-blockquote {
+  background-color: rgba(52, 106, 134, 0.05);
+  border-left: 4px solid rgb(52, 106, 134);
+  margin: 16px 0;
+  padding: 16px 20px;
+  border-radius: 0 8px 8px 0;
+}
+
+.help-modal-content .help-blockquote p {
+  margin: 0;
+  font-style: italic;
+  color: rgb(52, 106, 134);
+}
+
+/* Table of Contents */
+.help-modal-content ol li a {
+  color: rgb(52, 106, 134);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.help-modal-content ol li a:hover {
+  color: rgb(35, 21, 32);
+  text-decoration: underline;
+}
+
+/* Special styling for the one file per session section */
+.help-modal-content h3:contains("One File Per Session"),
+.help-modal-content h3[id*="one-file"] {
+  background-color: rgba(52, 106, 134, 0.1);
+  padding: 12px 16px;
+  border-radius: 8px;
+  border-left: 4px solid rgb(52, 106, 134);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .floating-help-button {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  /* On mobile, add touch support */
+  .floating-help-button {
+    cursor: pointer;
+  }
+
+  .floating-help-button.dragging {
+    cursor: pointer;
+  }
+
+  .help-modal {
+    width: 95%;
+    height: 90vh;
+    margin: 10px;
+  }
+
+  .help-modal-header {
+    padding: 16px 20px;
+  }
+
+  .help-modal-header h2 {
+    font-size: 20px;
+  }
+
+  .help-modal-content {
+    padding: 16px 20px;
+  }
+
+  .help-modal-content .help-h1 {
+    font-size: 24px;
+  }
+
+  .help-modal-content .help-h2 {
+    font-size: 20px;
+  }
+
+  .help-modal-content .help-h3 {
+    font-size: 18px;
+  }
+
+  .help-modal-content .help-h4 {
+    font-size: 16px;
+  }
+}
+
+/* Add visual feedback for draggable state */
+.floating-help-button::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, rgba(52, 106, 134, 0.3), rgba(35, 21, 32, 0.3));
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.floating-help-button:hover::before {
+  opacity: 1;
+}
+
+/* Scrollbar Styling */
+.help-modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.help-modal-content::-webkit-scrollbar-track {
+  background: rgba(52, 106, 134, 0.1);
+  border-radius: 4px;
+}
+
+.help-modal-content::-webkit-scrollbar-thumb {
+  background: rgb(52, 106, 134);
+  border-radius: 4px;
+}
+
+.help-modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgb(35, 21, 32);
+}
+
+/* Focus states for accessibility */
+.floating-help-button:focus {
+  outline: 3px solid rgba(52, 106, 134, 0.5);
+  outline-offset: 2px;
+}
+
+.help-modal-close:focus {
+  outline: 2px solid rgb(229, 231, 230);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .floating-help-button {
+    border: 2px solid rgb(229, 231, 230);
+  }
+  
+  .help-modal {
+    border: 2px solid rgb(35, 21, 32);
+  }
+}

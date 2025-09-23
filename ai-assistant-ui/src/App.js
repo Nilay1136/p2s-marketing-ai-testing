@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import { FaFile } from 'react-icons/fa';
 import DocumentViewer from './DocumentViewer';
+import FloatingHelp from './FloatingHelp';
 import logo from './P2S_Legence_Logo_White.png';
 import { API_ENDPOINTS, DEPARTMENT_AGENT_MAP } from './apiConfig'; 
 import ReactMarkdown from 'react-markdown';
@@ -1396,6 +1397,9 @@ const handleSessionSwitch = (sessionId, department) => {
         documents={viewingSessionDocs?.processed_files || []}
         sessionTitle={viewingSessionDocs?.title || 'Session'}
       />
+      
+      {/* Floating Help Component */}
+      <FloatingHelp />
     </div>
   );
 }
