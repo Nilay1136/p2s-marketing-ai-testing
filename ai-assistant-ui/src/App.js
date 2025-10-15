@@ -23,6 +23,7 @@ import remarkGfm from 'remark-gfm';
 import Modal from 'react-modal';
 import { ToastContainer, toast } from 'react-toastify';
 import { Trash } from 'lucide-react';
+import ProjectProfilesModal from './ProjectProfilesModal';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Import components (create fallbacks if missing)
@@ -555,6 +556,7 @@ function App() {
   const chatHistoryRef = useRef(null);
   const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
   const [viewingSessionDocs, setViewingSessionDocs] = useState(null);
+  const [projectProfilesModalOpen, setProjectProfilesModalOpen] = useState(false);
 
   // Load sessions on startup
   useEffect(() => {
@@ -987,7 +989,11 @@ const handleSendMessage = useCallback(async () => {
   };
 
   const handleToolSelect = (tool) => {
-    toast.info(`${tool.name} tool selected - Integration coming soon!`);
+    if (tool.id === 'project-profiles') {
+      setProjectProfilesModalOpen(true);
+    } else {
+      toast.info(`${tool.name} tool selected - Integration coming soon!`);
+    }
   };
 
   const handleAddSession = async () => {
@@ -1400,6 +1406,14 @@ const handleSessionSwitch = (sessionId, department) => {
       
       {/* Floating Help Component */}
       <FloatingHelp />
+      
+      {/* Project Profiles Modal */}
+      <ProjectProfilesModal
+        isOpen={projectProfilesModalOpen}
+        onClose={() => setProjectProfilesModalOpen(false)}
+        userId={user?.user_id}
+        sessionId={activeSessionId}
+      />
     </div>
   );
 }

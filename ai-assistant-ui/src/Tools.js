@@ -8,7 +8,8 @@ import {
   FaRocket,
   FaChevronDown,
   FaChevronRight,
-  FaCog
+  FaCog,
+  FaProjectDiagram
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import './Tools.css';
@@ -45,6 +46,14 @@ const Tools = ({ selectedDepartment, onToolSelect }) => {
       }
     ],
     'Marketing': [
+      {
+        id: 'project-profiles',
+        name: 'Project Profiles',
+        icon: <FaProjectDiagram />,
+        description: 'Upload RFP and analyze project type with matching projects',
+        enabled: true,
+        comingSoon: false
+      },
       {
         id: 'SOQ-Creator',
         name: 'SOQ Creator',

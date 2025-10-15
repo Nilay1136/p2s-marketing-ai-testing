@@ -28,7 +28,21 @@ export const API_ENDPOINTS = {
   },
   
   // Health check
-  HEALTH: '/health'
+  HEALTH: '/health',
+  
+  // RFP and Project Profiles
+  RFP: {
+    ANALYZE: '/rfp/analyze',
+    ANALYZE_AND_MATCH: '/rfp/analyze-and-match'
+  },
+  
+  // Projects
+  PROJECTS: {
+    BY_TYPE: (projectType) => `/projects/by-type/${projectType}`,
+    SEARCH: '/projects/search',
+    BY_ID: (projectId) => `/projects/${projectId}`,
+    TYPES: '/projects/types/list'
+  }
 };
 
 // Request configuration
