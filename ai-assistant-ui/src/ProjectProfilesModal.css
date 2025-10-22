@@ -1,0 +1,548 @@
+/* Project Profiles Modal Styles - Matching FloatingHelp.css Branding */
+.project-profiles-modal {
+  background-color: rgb(229, 231, 230);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 900px;
+  height: 85vh;
+  max-height: 700px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(35, 21, 32, 0.3);
+  font-family: 'GT Walsheim', sans-serif;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(35, 21, 32, 0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-header {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgb(35, 21, 32);
+}
+
+.modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon {
+  font-size: 24px;
+}
+
+.modal-title h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: rgb(229, 231, 230);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-button:hover {
+  background-color: rgba(229, 231, 230, 0.1);
+}
+
+.modal-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: rgb(229, 231, 230);
+  line-height: 1.6;
+}
+
+/* Scrollbar Styling for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(52, 106, 134, 0.1);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgb(52, 106, 134);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgb(35, 21, 32);
+}
+
+/* Upload Section */
+.upload-section h3 {
+  margin: 0 0 8px 0;
+  color: rgb(35, 21, 32);
+  font-size: 20px;
+  font-weight: 600;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.section-description {
+  color: rgb(52, 106, 134);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.file-upload-area {
+  margin-bottom: 24px;
+}
+
+.upload-placeholder {
+  border: 2px dashed rgb(52, 106, 134);
+  border-radius: 12px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background-color: rgb(229, 231, 230);
+}
+
+.upload-placeholder:hover {
+  border-color: rgb(35, 21, 32);
+  background-color: rgba(52, 106, 134, 0.05);
+}
+
+.upload-icon {
+  font-size: 32px;
+  color: rgb(52, 106, 134);
+  margin-bottom: 12px;
+}
+
+.upload-placeholder p {
+  margin: 0 0 8px 0;
+  color: rgb(35, 21, 32);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.file-types {
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+.uploaded-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 12px;
+  background-color: rgb(229, 231, 230);
+}
+
+.file-icon {
+  font-size: 24px;
+  color: rgb(52, 106, 134);
+}
+
+.file-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.file-name {
+  color: rgb(35, 21, 32);
+  font-weight: 500;
+}
+
+.file-size {
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+.change-file-btn {
+  background: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.change-file-btn:hover {
+  background: rgb(35, 21, 32);
+}
+
+/* Description Section */
+.description-section {
+  margin-bottom: 24px;
+}
+
+.description-section label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgb(35, 21, 32);
+  font-weight: 500;
+}
+
+.description-section textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 8px;
+  resize: vertical;
+  font-family: 'GT Walsheim', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.description-section textarea:focus {
+  outline: none;
+  border-color: rgb(35, 21, 32);
+  box-shadow: 0 0 0 3px rgba(52, 106, 134, 0.1);
+}
+
+.char-count {
+  display: block;
+  text-align: right;
+  color: rgb(52, 106, 134);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Modal Actions */
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgb(229, 231, 230);
+}
+
+.analyze-btn, .new-analysis-btn {
+  background: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  font-family: 'GT Walsheim', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.analyze-btn:hover, .new-analysis-btn:hover {
+  background: rgb(35, 21, 32);
+  box-shadow: 0 4px 12px rgba(35, 21, 32, 0.3);
+}
+
+.analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: rgb(52, 106, 134);
+  box-shadow: none;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Results Section */
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.analysis-results h3, .matching-projects h3 {
+  margin: 0 0 16px 0;
+  color: rgb(35, 21, 32);
+  font-size: 20px;
+  font-weight: 600;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.analysis-card {
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 12px;
+  padding: 20px;
+  background-color: rgb(229, 231, 230);
+}
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.project-icon {
+  font-size: 24px;
+  color: rgb(52, 106, 134);
+}
+
+.analysis-header h4 {
+  margin: 0 0 4px 0;
+  color: rgb(35, 21, 32);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.project-type {
+  color: rgb(52, 106, 134);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.analysis-description {
+  margin-bottom: 16px;
+}
+
+.analysis-description h5 {
+  margin: 0 0 8px 0;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.analysis-description p {
+  margin: 0;
+  color: rgb(52, 106, 134);
+  line-height: 1.5;
+}
+
+.analysis-meta {
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+/* Projects List */
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.project-card {
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 12px;
+  padding: 16px;
+  background-color: white;
+  transition: box-shadow 0.2s;
+}
+
+.project-card:hover {
+  box-shadow: 0 4px 12px rgba(35, 21, 32, 0.15);
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.project-name {
+  margin: 0;
+  color: rgb(35, 21, 32);
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.project-type-badge {
+  background: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.project-description {
+  margin: 0 0 12px 0;
+  color: rgb(52, 106, 134);
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.project-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+.detail-icon {
+  font-size: 12px;
+  color: rgb(35, 21, 32);
+}
+
+.no-projects {
+  text-align: center;
+  padding: 40px 20px;
+  color: rgb(52, 106, 134);
+}
+
+.no-projects p {
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Scrollbar Styling */
+.projects-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.projects-list::-webkit-scrollbar-track {
+  background: rgba(52, 106, 134, 0.1);
+  border-radius: 4px;
+}
+
+.projects-list::-webkit-scrollbar-thumb {
+  background: rgb(52, 106, 134);
+  border-radius: 4px;
+}
+
+.projects-list::-webkit-scrollbar-thumb:hover {
+  background: rgb(35, 21, 32);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .project-profiles-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-header h2 {
+    font-size: 20px;
+  }
+  
+  .modal-content {
+    padding: 16px 20px;
+  }
+  
+  .project-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .project-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .modal-actions {
+    flex-direction: column;
+  }
+  
+  .analyze-btn, .new-analysis-btn {
+    width: 100%;
+  }
+}
+
+/* Focus states for accessibility */
+.close-button:focus {
+  outline: 2px solid rgb(229, 231, 230);
+  outline-offset: 2px;
+}
+
+.change-file-btn:focus,
+.analyze-btn:focus,
+.new-analysis-btn:focus {
+  outline: 2px solid rgb(229, 231, 230);
+  outline-offset: 2px;
+}
+
+.description-section textarea:focus {
+  outline: 2px solid rgb(52, 106, 134);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .project-profiles-modal {
+    border: 2px solid rgb(35, 21, 32);
+  }
+  
+  .project-card,
+  .analysis-card,
+  .uploaded-file {
+    border: 2px solid rgb(35, 21, 32);
+  }
+  
+  .upload-placeholder {
+    border: 2px solid rgb(35, 21, 32);
+  }
+}

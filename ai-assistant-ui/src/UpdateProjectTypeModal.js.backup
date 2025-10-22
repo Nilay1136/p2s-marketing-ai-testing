@@ -1,0 +1,817 @@
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { 
+  FaTimes, 
+  FaFilter, 
+  FaEdit, 
+  FaSave, 
+  FaTimes as FaCancel,
+  FaSearch,
+  FaSpinner,
+  FaSort,
+  FaSortUp,
+  FaSortDown,
+  FaSync
+} from 'react-icons/fa';
+import { API_ENDPOINTS, PROJECT_TYPES, getProjectTypeOptions } from './apiConfig';
+import StorageManager from './utils/storageUtils';
+import './UpdateProjectTypeModal.css';
+
+const UpdateProjectTypeModal = ({ isOpen, onClose, userId }) => {
+  // State management
+  const [projects, setProjects] = useState([]);
+  const [filteredProjects, setFilteredProjects] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Filter states
+  const [yearFilter, setYearFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Available filter options
+  const [availableYears, setAvailableYears] = useState([]);
+  const [availableTypes, setAvailableTypes] = useState([]);
+  
+  // Edit mode states
+  const [editingProjects, setEditingProjects] = useState(new Set());
+  const [pendingUpdates, setPendingUpdates] = useState({});
+  
+  // Sorting
+  const [sortField, setSortField] = useState('project_id');
+  const [sortDirection, setSortDirection] = useState('asc');
+  
+  // Pagination and performance states
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
+  
+  // Smart caching - in-memory cache for current session
+  const [sessionCache, setSessionCache] = useState(new Map());
+  
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [projectsPerPage] = useState(50);
+  
+  // Project type options for dropdown
+  const projectTypeOptions = getProjectTypeOptions();
+
+  // Fallback function to extract year from project ID if project_year is not available
+  const extractYearFromProjectId = useCallback((projectId) => {
+    if (!projectId) return null;
+    const match = projectId.match(/^(\d{4})-/);
+    return match ? match[1] : null;
+  }, []);
+
+  // Load available years for filter dropdown
+  const loadAvailableYears = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.PROJECTS.AVAILABLE_YEARS}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success && response.data.available_years) {
+        setAvailableYears(response.data.available_years);
+        console.log('Loaded available years:', response.data.available_years);
+      } else {
+        console.warn('Failed to load available years:', response.data);
+        // Fallback will be handled in the projects useEffect
+      }
+    } catch (error) {
+      console.error('Error loading available years:', error);
+      
+      // If this endpoint doesn't exist yet, we'll extract years from projects
+      if (error.response?.status === 422 || error.response?.status === 404) {
+        console.log('Years endpoint not available yet, will extract from projects');
+      }
+      // Fallback to extracting from loaded projects will happen in useEffect
+    }
+  }, []);
+
+  // Smart project loading with caching and pagination
+  const loadProjectsEfficiently = useCallback(async (searchParams = {}) => {
+    const { year = 'all', type = 'all', search = '', page = 1, reset = false } = searchParams;
+    
+    // Create cache key for this specific search
+    const cacheKey = `${year}-${type}-${search}-${page}`;
+    
+    // Check if we already have this data in session cache
+    if (!reset && sessionCache.has(cacheKey)) {
+      console.log('Using session cache for:', cacheKey);
+      const cachedData = sessionCache.get(cacheKey);
+      
+      if (page === 1) {
+        setProjects(cachedData.projects);
+        setTotalCount(cachedData.total);
+      } else {
+        setProjects(prev => [...prev, ...cachedData.projects]);
+      }
+      
+      setHasNextPage(cachedData.hasMore);
+      return;
+    }
+    
+    setLoading(page === 1);
+    setLoadingMore(page > 1);
+    setError(null);
+    
+    try {
+      // Build API parameters for server-side filtering
+      const params = {
+        limit: projectsPerPage,
+        offset: (page - 1) * projectsPerPage
+      };
+      
+      // Add filters if specified
+      if (year !== 'all') params.year = year;
+      if (type !== 'all') params.project_type = type;
+      if (search.trim()) params.search = search.trim();
+      
+      const fullUrl = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PROJECTS.ALL}`;
+      console.log('Loading projects with params:', params);
+      
+      const response = await axios.get(fullUrl, {
+        params,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.data.success && response.data.projects) {
+        const newProjects = response.data.projects.map(project => ({
+          ...project,
+          project_year: project.project_year || extractYearFromProjectId(project.project_id)
+        }));
+        
+        const total = response.data.total || response.data.projects.length;
+        const hasMore = newProjects.length === projectsPerPage;
+        
+        // Cache this page
+        sessionCache.set(cacheKey, {
+          projects: newProjects,
+          total,
+          hasMore,
+          timestamp: Date.now()
+        });
+        
+        if (page === 1) {
+          setProjects(newProjects);
+          setTotalCount(total);
+        } else {
+          setProjects(prev => [...prev, ...newProjects]);
+        }
+        
+        setHasNextPage(hasMore);
+        
+        console.log(`Loaded ${newProjects.length} projects (page ${page}), total: ${total}`);
+        
+        // Show success message only for first page
+        if (page === 1) {
+          toast.success(`Loaded ${newProjects.length} projects${total > newProjects.length ? ` (${total} total)` : ''}`, {
+            autoClose: 2000
+          });
+        }
+        
+      } else {
+        throw new Error(response.data.message || 'No projects data received');
+      }
+      
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message;
+      setError(`Failed to load projects: ${errorMessage}`);
+      toast.error(`Failed to load projects: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [sessionCache, projectsPerPage, extractYearFromProjectId]);
+
+  // Load next page of results
+  const loadMoreProjects = useCallback(() => {
+    if (loadingMore || !hasNextPage) return;
+    
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    
+    loadProjectsEfficiently({
+      year: yearFilter,
+      type: typeFilter,
+      search: searchTerm,
+      page: nextPage
+    });
+  }, [loadingMore, hasNextPage, currentPage, loadProjectsEfficiently, yearFilter, typeFilter, searchTerm]);
+
+  // Quick search function for immediate filtering
+  const handleSearch = useCallback(async (searchValue) => {
+    setSearchTerm(searchValue);
+    setCurrentPage(1);
+    
+    // Debounced search to avoid too many API calls
+    if (searchValue.length > 2 || searchValue.length === 0) {
+      await loadProjectsEfficiently({
+        year: yearFilter,
+        type: typeFilter,
+        search: searchValue,
+        page: 1,
+        reset: true
+      });
+    }
+  }, [loadProjectsEfficiently, yearFilter, typeFilter]);
+
+  // Refresh data function
+  const handleRefreshData = useCallback(async () => {
+    try {
+      // Clear session cache and reload
+      setSessionCache(new Map());
+      setCurrentPage(1);
+      console.log('Cache cleared manually');
+      toast.info('Loading fresh data...', { autoClose: 2000 });
+      
+      await loadProjectsEfficiently({
+        year: yearFilter,
+        type: typeFilter,
+        search: searchTerm,
+        page: 1,
+        reset: true
+      });
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
+    }
+  }, [loadProjectsEfficiently, yearFilter, typeFilter, searchTerm]);
+
+  // Load projects when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('=== UPDATE PROJECT TYPE MODAL OPENED ===');
+      
+      // Load available years first (lightweight operation)
+      if (typeof loadAvailableYears === 'function') {
+        loadAvailableYears();
+      }
+      
+      // Load initial projects with current filters
+      if (typeof loadProjectsEfficiently === 'function') {
+        loadProjectsEfficiently({
+          year: yearFilter,
+          type: typeFilter,
+          search: searchTerm,
+          page: 1,
+          reset: true
+        });
+      }
+    }
+  }, [isOpen]); // Simplified dependencies to avoid hoisting issues
+
+  // Handle filter changes
+  useEffect(() => {
+    if (isOpen && (yearFilter !== 'all' || typeFilter !== 'all')) {
+      setCurrentPage(1);
+      if (typeof loadProjectsEfficiently === 'function') {
+        loadProjectsEfficiently({
+          year: yearFilter,
+          type: typeFilter,
+          search: searchTerm,
+          page: 1,
+          reset: true
+        });
+      }
+    }
+  }, [isOpen, yearFilter, typeFilter]); // Simplified dependencies
+
+  // Extract available years and types from projects
+  useEffect(() => {
+    if (projects.length > 0) {
+      // Extract unique project types from loaded projects
+      const types = [...new Set(projects.map(p => p.project_type).filter(Boolean))].sort();
+      setAvailableTypes(types);
+      
+      // If we don't have years loaded from API, extract from projects
+      if (availableYears.length === 0) {
+        const years = [...new Set(projects.map(p => p.project_year).filter(Boolean))].sort((a, b) => b - a);
+        setAvailableYears(years);
+      }
+    }
+  }, [projects, availableYears.length]);
+
+  const loadAvailableYears = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.PROJECTS.AVAILABLE_YEARS}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.data.success && response.data.available_years) {
+        setAvailableYears(response.data.available_years);
+        console.log('Loaded available years:', response.data.available_years);
+      } else {
+        console.warn('Failed to load available years:', response.data);
+        // Fallback will be handled in the projects useEffect
+      }
+    } catch (error) {
+      console.error('Error loading available years:', error);
+      
+      // If this endpoint doesn't exist yet, we'll extract years from projects
+      if (error.response?.status === 422 || error.response?.status === 404) {
+        console.log('Years endpoint not available yet, will extract from projects');
+      }
+      // Fallback to extracting from loaded projects will happen in useEffect
+    }
+  }, []);
+
+  const handleRefreshData = useCallback(async () => {
+    try {
+      // Clear session cache and reload
+      setSessionCache(new Map());
+      setCurrentPage(1);
+      console.log('Cache cleared manually');
+      toast.info('Loading fresh data...', { autoClose: 2000 });
+      
+      await loadProjectsEfficiently({
+        year: yearFilter,
+        type: typeFilter,
+        search: searchTerm,
+        page: 1,
+        reset: true
+      });
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
+    }
+  }, [loadProjectsEfficiently, yearFilter, typeFilter, searchTerm]);
+
+  // Smart project loading with caching and pagination
+  const loadProjectsEfficiently = useCallback(async (searchParams = {}) => {
+    const { year = 'all', type = 'all', search = '', page = 1, reset = false } = searchParams;
+    
+    // Create cache key for this specific search
+    const cacheKey = `${year}-${type}-${search}-${page}`;
+    
+    // Check if we already have this data in session cache
+    if (!reset && sessionCache.has(cacheKey)) {
+      console.log('Using session cache for:', cacheKey);
+      const cachedData = sessionCache.get(cacheKey);
+      
+      if (page === 1) {
+        setProjects(cachedData.projects);
+        setTotalCount(cachedData.total);
+      } else {
+        setProjects(prev => [...prev, ...cachedData.projects]);
+      }
+      
+      setHasNextPage(cachedData.hasMore);
+      return;
+    }
+    
+    setLoading(page === 1);
+    setLoadingMore(page > 1);
+    setError(null);
+    
+    try {
+      // Build API parameters for server-side filtering
+      const params = {
+        limit: projectsPerPage,
+        offset: (page - 1) * projectsPerPage
+      };
+      
+      // Add filters if specified
+      if (year !== 'all') params.year = year;
+      if (type !== 'all') params.project_type = type;
+      if (search.trim()) params.search = search.trim();
+      
+      const fullUrl = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PROJECTS.ALL}`;
+      console.log('Loading projects with params:', params);
+      
+      const response = await axios.get(fullUrl, {
+        params,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.data.success && response.data.projects) {
+        const newProjects = response.data.projects.map(project => ({
+          ...project,
+          project_year: project.project_year || extractYearFromProjectId(project.project_id)
+        }));
+        
+        const total = response.data.total || response.data.projects.length;
+        const hasMore = newProjects.length === projectsPerPage;
+        
+        // Cache this page
+        sessionCache.set(cacheKey, {
+          projects: newProjects,
+          total,
+          hasMore,
+          timestamp: Date.now()
+        });
+        
+        if (page === 1) {
+          setProjects(newProjects);
+          setTotalCount(total);
+        } else {
+          setProjects(prev => [...prev, ...newProjects]);
+        }
+        
+        setHasNextPage(hasMore);
+        
+        console.log(`Loaded ${newProjects.length} projects (page ${page}), total: ${total}`);
+        
+        // Show success message only for first page
+        if (page === 1) {
+          toast.success(`Loaded ${newProjects.length} projects${total > newProjects.length ? ` (${total} total)` : ''}`, {
+            autoClose: 2000
+          });
+        }
+        
+      } else {
+        throw new Error(response.data.message || 'No projects data received');
+      }
+      
+    } catch (error) {
+      console.error('Error loading projects:', error);
+      const errorMessage = error.response?.data?.detail || error.response?.data?.message || error.message;
+      setError(`Failed to load projects: ${errorMessage}`);
+      toast.error(`Failed to load projects: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [sessionCache, projectsPerPage, extractYearFromProjectId]);
+  
+  // Load next page of results
+  const loadMoreProjects = () => {
+    if (loadingMore || !hasNextPage) return;
+    
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    
+    loadProjectsEfficiently({
+      year: yearFilter,
+      type: typeFilter,
+      search: searchTerm,
+      page: nextPage
+    });
+  };
+  
+  // Quick search function for immediate filtering
+  const handleSearch = useCallback(async (searchValue) => {
+    setSearchTerm(searchValue);
+    setCurrentPage(1);
+    
+    // Debounced search to avoid too many API calls
+    if (searchValue.length > 2 || searchValue.length === 0) {
+      await loadProjectsEfficiently({
+        year: yearFilter,
+        type: typeFilter,
+        search: searchValue,
+        page: 1,
+        reset: true
+      });
+    }
+  }, [loadProjectsEfficiently, yearFilter, typeFilter]);
+
+  // Fallback function to extract year from project ID if project_year is not available
+  const extractYearFromProjectId = (projectId) => {
+    if (!projectId) return null;
+    const match = projectId.match(/^(\d{4})-/);
+    return match ? match[1] : null;
+  };
+
+  // Update filtered projects when projects change
+  useEffect(() => {
+    setFilteredProjects(projects);
+  }, [projects]);
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) return <FaSort />;
+    return sortDirection === 'asc' ? <FaSortUp /> : <FaSortDown />;
+  };
+
+  const startEditing = (projectId) => {
+    setEditingProjects(prev => new Set([...prev, projectId]));
+    // Initialize pending update with current project type
+    const project = projects.find(p => p.project_id === projectId);
+    if (project) {
+      setPendingUpdates(prev => ({
+        ...prev,
+        [projectId]: project.project_type || ''
+      }));
+    }
+  };
+
+  const cancelEditing = (projectId) => {
+    setEditingProjects(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(projectId);
+      return newSet;
+    });
+    setPendingUpdates(prev => {
+      const newUpdates = { ...prev };
+      delete newUpdates[projectId];
+      return newUpdates;
+    });
+  };
+
+  const handleProjectTypeChange = (projectId, newType) => {
+    setPendingUpdates(prev => ({
+      ...prev,
+      [projectId]: newType
+    }));
+  };
+
+  const saveProjectType = async (projectId) => {
+    const newType = pendingUpdates[projectId];
+    const project = projects.find(p => p.project_id === projectId);
+    
+    if (!newType || !project) {
+      toast.error('Invalid project type or project not found');
+      return;
+    }
+
+    if (newType === project.project_type) {
+      // No change, just cancel editing
+      cancelEditing(projectId);
+      return;
+    }
+
+    try {
+      const updateRequest = {
+        project_id: projectId,
+        new_project_type: { value: newType },
+        updated_by: userId || 'demo-user'
+      };
+
+      const response = await axios.put(
+        `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PROJECTS.UPDATE_TYPE(projectId)}`,
+        updateRequest,
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.data.success) {
+        // Update local state
+        setProjects(prev => prev.map(p => 
+          p.project_id === projectId 
+            ? { ...p, project_type: newType }
+            : p
+        ));
+        
+        cancelEditing(projectId);
+        toast.success(`Project type updated successfully for ${projectId}`);
+      } else {
+        throw new Error(response.data.message || 'Failed to update project type');
+      }
+    } catch (error) {
+      console.error('Error updating project type:', error);
+      toast.error(`Failed to update project type: ${error.response?.data?.detail || error.message}`);
+    }
+  };
+
+  // Reset modal state when closing
+  const handleClose = () => {
+    setSearchTerm('');
+    setYearFilter('all');
+    setTypeFilter('all');
+    setCurrentPage(1);
+    setProjects([]);
+    setFilteredProjects([]);
+    setError(null);
+    onClose();
+  };
+
+  // Extract year from project (now comes from backend)
+  const extractYear = (project) => {
+    return project?.project_year || 'Unknown';
+  };
+
+  // Get project type display name
+  const getProjectTypeLabel = (typeKey) => {
+    return PROJECT_TYPES[typeKey] || typeKey || 'Unknown';
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-overlay">
+      <div className="update-project-type-modal">
+        <div className="modal-header">
+          <h2>Update Project Types</h2>
+          <button className="close-button" onClick={onClose}>
+            <FaTimes />
+          </button>
+        </div>
+
+        <div className="modal-content">
+          {/* Filters Section */}
+          <div className="filters-section">
+            <div className="filter-row">
+              <div className="filter-group">
+                <label>
+                  <FaFilter /> Year:
+                  <select 
+                    value={yearFilter} 
+                    onChange={(e) => setYearFilter(e.target.value)}
+                  >
+                    <option value="all">All Years</option>
+                    {availableYears.map(year => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              
+              <div className="filter-group">
+                <label>
+                  <FaFilter /> Type:
+                  <select 
+                    value={typeFilter} 
+                    onChange={(e) => setTypeFilter(e.target.value)}
+                  >
+                    <option value="all">All Types</option>
+                    {availableTypes.map(type => (
+                      <option key={type} value={type}>
+                        {getProjectTypeLabel(type)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              
+              <div className="filter-group search-group">
+                <label>
+                  <FaSearch /> Search:
+                  <input
+                    type="text"
+                    placeholder="Search projects..."
+                    value={searchTerm}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    disabled={loading}
+                  />
+                </label>
+              </div>
+            </div>
+            
+            <div className="filter-info">
+              <div className="info-left">
+                Showing {filteredProjects.length} of {totalCount > 0 ? totalCount : 'many'} projects
+                {loading && <span> <FaSpinner className="spinning" /> Loading...</span>}
+                {loadingMore && <span> <FaSpinner className="spinning" /> Loading more...</span>}
+                {sessionCache.size > 0 && <span className="cache-indicator"> (Cached data available)</span>}
+              </div>
+              <div className="info-right">
+                <button
+                  className="refresh-button"
+                  onClick={handleRefreshData}
+                  disabled={loading}
+                  title="Refresh data from server"
+                >
+                  <FaSync className={loading ? 'spinning' : ''} />
+                  Refresh Data
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Projects Table */}
+          <div className="projects-table-container">
+            {loading ? (
+              <div className="loading-state">
+                <FaSpinner className="spinner" />
+                <p>Loading projects...</p>
+              </div>
+            ) : error ? (
+              <div className="error-state">
+                <p>Error: {error}</p>
+                <button onClick={handleRefreshData}>Retry</button>
+              </div>
+            ) : (
+              <>
+                <table className="projects-table">
+                  <thead>
+                    <tr>
+                      <th onClick={() => handleSort('project_id')}>
+                        Project Number {getSortIcon('project_id')}
+                      </th>
+                      <th onClick={() => handleSort('project_name')}>
+                        Project Name {getSortIcon('project_name')}
+                      </th>
+                      <th onClick={() => handleSort('project_year')}>
+                        Year {getSortIcon('project_year')}
+                      </th>
+                      <th onClick={() => handleSort('project_type')}>
+                        Current Project Type {getSortIcon('project_type')}
+                      </th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProjects.map((project) => (
+                      <tr key={project.project_id}>
+                        <td className="project-id">{project.project_id}</td>
+                        <td className="project-name" title={project.project_name}>
+                          {project.project_name}
+                        </td>
+                        <td className="project-year">
+                          {extractYear(project)}
+                        </td>
+                        <td className="project-type">
+                          {editingProjects.has(project.project_id) ? (
+                            <select
+                              value={pendingUpdates[project.project_id] || ''}
+                              onChange={(e) => handleProjectTypeChange(project.project_id, e.target.value)}
+                              className="project-type-select"
+                            >
+                              <option value="">Select Type...</option>
+                              {projectTypeOptions.map(option => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <span className="project-type-display">
+                              {getProjectTypeLabel(project.project_type)}
+                            </span>
+                          )}
+                        </td>
+                        <td className="actions">
+                          {editingProjects.has(project.project_id) ? (
+                            <div className="edit-actions">
+                              <button
+                                onClick={() => saveProjectType(project.project_id)}
+                                className="save-button"
+                                title="Save changes"
+                              >
+                                <FaSave />
+                              </button>
+                              <button
+                                onClick={() => cancelEditing(project.project_id)}
+                                className="cancel-button"
+                                title="Cancel editing"
+                              >
+                                <FaCancel />
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => startEditing(project.project_id)}
+                              className="edit-button"
+                              title="Edit project type"
+                            >
+                              <FaEdit />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Load More Button */}
+                {hasNextPage && !loading && (
+                  <div className="load-more-container">
+                    <button
+                      className="load-more-button"
+                      onClick={loadMoreProjects}
+                      disabled={loadingMore}
+                    >
+                      {loadingMore ? (
+                        <>
+                          <FaSpinner className="spinning" /> Loading More...
+                        </>
+                      ) : (
+                        `Load More Projects`
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button onClick={handleClose} className="close-modal-button">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default UpdateProjectTypeModal;
