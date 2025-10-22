@@ -11,7 +11,9 @@ import {
   FaThumbsUp,
   FaThumbsDown,
   FaSignOutAlt,
-  FaSignInAlt
+  FaSignInAlt,
+  FaCog,
+  FaDatabase
 } from 'react-icons/fa';
 import { FaFile } from 'react-icons/fa';
 import DocumentViewer from './DocumentViewer';
@@ -24,6 +26,7 @@ import Modal from 'react-modal';
 import { ToastContainer, toast } from 'react-toastify';
 import { Trash } from 'lucide-react';
 import ProjectProfilesModal from './ProjectProfilesModal';
+import UpdateProjectTypeModal from './UpdateProjectTypeModal';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Import components (create fallbacks if missing)
@@ -557,6 +560,7 @@ function App() {
   const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
   const [viewingSessionDocs, setViewingSessionDocs] = useState(null);
   const [projectProfilesModalOpen, setProjectProfilesModalOpen] = useState(false);
+  const [updateProjectTypeModalOpen, setUpdateProjectTypeModalOpen] = useState(false);
 
   // Load sessions on startup
   useEffect(() => {
@@ -1116,6 +1120,18 @@ const handleSessionSwitch = (sessionId, department) => {
         </div>
         
         <div className="logout-container">
+          {/* Update Project Type Button - Only show for Marketing */}
+          {selectedDepartment === 'Marketing' && (
+            <button
+              className="update-project-type-button"
+              onClick={() => setUpdateProjectTypeModalOpen(true)}
+              title="Update Project Types"
+            >
+              <FaDatabase />
+              <span>Update Project Types</span>
+            </button>
+          )}
+          
           <button 
             className="logout-button" 
             onClick={() => toast.info("Demo Mode - Auth disabled")}
@@ -1413,6 +1429,13 @@ const handleSessionSwitch = (sessionId, department) => {
         onClose={() => setProjectProfilesModalOpen(false)}
         userId={user?.user_id}
         sessionId={activeSessionId}
+      />
+      
+      {/* Update Project Type Modal */}
+      <UpdateProjectTypeModal
+        isOpen={updateProjectTypeModalOpen}
+        onClose={() => setUpdateProjectTypeModalOpen(false)}
+        userId={user?.user_id}
       />
     </div>
   );

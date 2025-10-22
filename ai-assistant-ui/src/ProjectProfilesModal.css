@@ -1,16 +1,28 @@
-/* Project Profiles Modal Styles */
+/* Project Profiles Modal Styles - Matching FloatingHelp.css Branding */
 .project-profiles-modal {
-  background: white;
+  background-color: rgb(229, 231, 230);
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
   max-width: 900px;
-  width: 90vw;
-  max-height: 90vh;
-  overflow: hidden;
+  height: 85vh;
+  max-height: 700px;
   display: flex;
   flex-direction: column;
-  position: relative;
-  z-index: 1001;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(35, 21, 32, 0.3);
+  font-family: 'GT Walsheim', sans-serif;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-overlay {
@@ -19,22 +31,23 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(35, 21, 32, 0.7);
+  z-index: 2000;
   display: flex;
-  justify-content: center;
   align-items: center;
-  z-index: 1000;
+  justify-content: center;
+  padding: 20px;
   backdrop-filter: blur(4px);
 }
 
 .modal-header {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 20px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e5e7eb;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  border-bottom: 2px solid rgb(35, 21, 32);
 }
 
 .modal-title {
@@ -50,40 +63,66 @@
 .modal-title h2 {
   margin: 0;
   font-size: 24px;
-  font-weight: 600;
+  font-weight: bold;
+  font-family: 'GT Walsheim', sans-serif;
 }
 
 .close-button {
   background: none;
   border: none;
-  color: white;
+  color: rgb(229, 231, 230);
   font-size: 20px;
   cursor: pointer;
   padding: 8px;
   border-radius: 6px;
   transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(229, 231, 230, 0.1);
 }
 
 .modal-content {
   flex: 1;
-  overflow-y: auto;
   padding: 24px;
+  overflow-y: auto;
+  background-color: rgb(229, 231, 230);
+  line-height: 1.6;
+}
+
+/* Scrollbar Styling for modal content */
+.modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: rgba(52, 106, 134, 0.1);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgb(52, 106, 134);
+  border-radius: 4px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+  background: rgb(35, 21, 32);
 }
 
 /* Upload Section */
 .upload-section h3 {
   margin: 0 0 8px 0;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-size: 20px;
   font-weight: 600;
+  font-family: 'GT Walsheim', sans-serif;
 }
 
 .section-description {
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   margin-bottom: 24px;
   line-height: 1.5;
 }
@@ -93,35 +132,35 @@
 }
 
 .upload-placeholder {
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
+  border: 2px dashed rgb(52, 106, 134);
+  border-radius: 12px;
   padding: 40px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background-color: #f9fafb;
+  background-color: rgb(229, 231, 230);
 }
 
 .upload-placeholder:hover {
-  border-color: #667eea;
-  background-color: #f0f4ff;
+  border-color: rgb(35, 21, 32);
+  background-color: rgba(52, 106, 134, 0.05);
 }
 
 .upload-icon {
   font-size: 32px;
-  color: #9ca3af;
+  color: rgb(52, 106, 134);
   margin-bottom: 12px;
 }
 
 .upload-placeholder p {
   margin: 0 0 8px 0;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-size: 16px;
   font-weight: 500;
 }
 
 .file-types {
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   font-size: 14px;
 }
 
@@ -130,14 +169,14 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  background-color: #f9fafb;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 12px;
+  background-color: rgb(229, 231, 230);
 }
 
 .file-icon {
   font-size: 24px;
-  color: #667eea;
+  color: rgb(52, 106, 134);
 }
 
 .file-info {
@@ -148,28 +187,29 @@
 }
 
 .file-name {
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-weight: 500;
 }
 
 .file-size {
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   font-size: 14px;
 }
 
 .change-file-btn {
-  background: #667eea;
-  color: white;
+  background: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
   border: none;
   padding: 8px 16px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.2s;
+  font-family: 'GT Walsheim', sans-serif;
 }
 
 .change-file-btn:hover {
-  background: #5a67d8;
+  background: rgb(35, 21, 32);
 }
 
 /* Description Section */
@@ -180,17 +220,17 @@
 .description-section label {
   display: block;
   margin-bottom: 8px;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-weight: 500;
 }
 
 .description-section textarea {
   width: 100%;
   padding: 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 8px;
   resize: vertical;
-  font-family: inherit;
+  font-family: 'GT Walsheim', sans-serif;
   font-size: 14px;
   line-height: 1.5;
   box-sizing: border-box;
@@ -198,14 +238,14 @@
 
 .description-section textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: rgb(35, 21, 32);
+  box-shadow: 0 0 0 3px rgba(52, 106, 134, 0.1);
 }
 
 .char-count {
   display: block;
   text-align: right;
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   font-size: 12px;
   margin-top: 4px;
 }
@@ -217,35 +257,36 @@
   gap: 12px;
   margin-top: 24px;
   padding-top: 24px;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid rgb(229, 231, 230);
 }
 
 .analyze-btn, .new-analysis-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
   border: none;
   padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
   font-weight: 500;
+  font-family: 'GT Walsheim', sans-serif;
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.2s;
   min-width: 200px;
   justify-content: center;
 }
 
 .analyze-btn:hover, .new-analysis-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  background: rgb(35, 21, 32);
+  box-shadow: 0 4px 12px rgba(35, 21, 32, 0.3);
 }
 
 .analyze-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
+  background: rgb(52, 106, 134);
   box-shadow: none;
 }
 
@@ -267,16 +308,17 @@
 
 .analysis-results h3, .matching-projects h3 {
   margin: 0 0 16px 0;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-size: 20px;
   font-weight: 600;
+  font-family: 'GT Walsheim', sans-serif;
 }
 
 .analysis-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 12px;
   padding: 20px;
-  background-color: #f9fafb;
+  background-color: rgb(229, 231, 230);
 }
 
 .analysis-header {
@@ -288,18 +330,18 @@
 
 .project-icon {
   font-size: 24px;
-  color: #667eea;
+  color: rgb(52, 106, 134);
 }
 
 .analysis-header h4 {
   margin: 0 0 4px 0;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-size: 16px;
   font-weight: 500;
 }
 
 .project-type {
-  color: #667eea;
+  color: rgb(52, 106, 134);
   font-size: 18px;
   font-weight: 600;
 }
@@ -310,7 +352,7 @@
 
 .analysis-description h5 {
   margin: 0 0 8px 0;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-size: 14px;
   font-weight: 600;
   text-transform: uppercase;
@@ -319,12 +361,12 @@
 
 .analysis-description p {
   margin: 0;
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   line-height: 1.5;
 }
 
 .analysis-meta {
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   font-size: 14px;
 }
 
@@ -339,15 +381,15 @@
 }
 
 .project-card {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid rgb(52, 106, 134);
+  border-radius: 12px;
   padding: 16px;
   background-color: white;
   transition: box-shadow 0.2s;
 }
 
 .project-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(35, 21, 32, 0.15);
 }
 
 .project-header {
@@ -360,17 +402,17 @@
 
 .project-name {
   margin: 0;
-  color: #374151;
+  color: rgb(35, 21, 32);
   font-size: 16px;
   font-weight: 600;
   flex: 1;
 }
 
 .project-type-badge {
-  background: #667eea;
-  color: white;
+  background: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
   padding: 4px 8px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -378,7 +420,7 @@
 
 .project-description {
   margin: 0 0 12px 0;
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   line-height: 1.5;
   font-size: 14px;
 }
@@ -393,19 +435,19 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #6b7280;
+  color: rgb(52, 106, 134);
   font-size: 14px;
 }
 
 .detail-icon {
   font-size: 12px;
-  color: #9ca3af;
+  color: rgb(35, 21, 32);
 }
 
 .no-projects {
   text-align: center;
   padding: 40px 20px;
-  color: #6b7280;
+  color: rgb(52, 106, 134);
 }
 
 .no-projects p {
@@ -415,32 +457,40 @@
 
 /* Scrollbar Styling */
 .projects-list::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .projects-list::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
+  background: rgba(52, 106, 134, 0.1);
+  border-radius: 4px;
 }
 
 .projects-list::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: rgb(52, 106, 134);
+  border-radius: 4px;
 }
 
 .projects-list::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: rgb(35, 21, 32);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
   .project-profiles-modal {
-    width: 95vw;
+    width: 95%;
     max-height: 95vh;
   }
   
+  .modal-header {
+    padding: 16px 20px;
+  }
+  
+  .modal-header h2 {
+    font-size: 20px;
+  }
+  
   .modal-content {
-    padding: 16px;
+    padding: 16px 20px;
   }
   
   .project-header {
@@ -459,5 +509,40 @@
   
   .analyze-btn, .new-analysis-btn {
     width: 100%;
+  }
+}
+
+/* Focus states for accessibility */
+.close-button:focus {
+  outline: 2px solid rgb(229, 231, 230);
+  outline-offset: 2px;
+}
+
+.change-file-btn:focus,
+.analyze-btn:focus,
+.new-analysis-btn:focus {
+  outline: 2px solid rgb(229, 231, 230);
+  outline-offset: 2px;
+}
+
+.description-section textarea:focus {
+  outline: 2px solid rgb(52, 106, 134);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .project-profiles-modal {
+    border: 2px solid rgb(35, 21, 32);
+  }
+  
+  .project-card,
+  .analysis-card,
+  .uploaded-file {
+    border: 2px solid rgb(35, 21, 32);
+  }
+  
+  .upload-placeholder {
+    border: 2px solid rgb(35, 21, 32);
   }
 }

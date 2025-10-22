@@ -61,6 +61,50 @@ body, html {
   font-weight: bold;
 }
 
+/* Header controls section */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Logout container with Update Project Type button */
+.logout-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* Update Project Type Button */
+.update-project-type-button {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  height: 35px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.update-project-type-button:hover {
+  background-color: rgb(35, 21, 32);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(35, 21, 32, 0.15);
+}
+
+.update-project-type-button svg {
+  font-size: 16px;
+}
+
 /* Right section for controls and logout */
 .header-right {
   display: flex;
