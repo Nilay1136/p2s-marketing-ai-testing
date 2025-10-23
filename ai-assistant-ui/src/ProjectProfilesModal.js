@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaCalendar, FaDollarSign } from 'react-icons/fa';
+import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS } from './apiConfig';
 import './ProjectProfilesModal.css';
@@ -104,7 +104,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   };
 
   const formatCurrency = (amount) => {
-    if (!amount) return 'N/A';
+    if (amount === null || amount === undefined) return 'N/A';
+    if (amount === 0) return '$0';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -248,51 +249,50 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                 </div>
 
                 <div className="matching-projects">
-                  <h3>Matching Projects ({matchingProjects.length})</h3>
-                  
-                  {matchingProjects.length > 0 ? (
-                    <div className="projects-list">
-                      {matchingProjects.map((project, index) => (
-                        <div key={project.project_id || index} className="project-card">
-                          <div className="project-header">
-                            <h4 className="project-name">{project.project_name || 'Unnamed Project'}</h4>
-                            <span className="project-type-badge">{project.project_type}</span>
+                  {(() => {
+                    // Filter out projects where project_number starts with '0000'
+                    const filteredProjects = matchingProjects.filter(project => {
+                      const projectNumber = project.project_number || '';
+                      return !projectNumber.startsWith('0000');
+                    });
+                    
+                    return (
+                      <>
+                        <h3>Matching Projects ({filteredProjects.length})</h3>
+                        
+                        {filteredProjects.length > 0 ? (
+                          <div className="projects-list">
+                            {filteredProjects
+                              .sort((a, b) => (b.project_contract_labor || 0) - (a.project_contract_labor || 0))
+                              .map((project, index) => (
+                                <div key={project.project_id || index} className="project-card">
+                                  <div className="project-header">
+                                    <h4 className="project-name">{project.project_name || 'Unnamed Project'}</h4>
+                                    <span className="project-type-badge">{project.project_type}</span>
+                                  </div>
+                                  
+                                  <div className="project-details">
+                                    <div className="detail-item">
+                                      <FaProjectDiagram className="detail-icon" />
+                                      <span>Market: {project.primary_segment || 'Unspecified'}</span>
+                                    </div>
+                                    
+                                    <div className="detail-item">
+                                      <FaDollarSign className="detail-icon" />
+                                      <span>Value: {formatCurrency(project.project_contract_labor || 0)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
                           </div>
-                          
-                          {project.project_description && (
-                            <p className="project-description">{project.project_description}</p>
-                          )}
-                          
-                          <div className="project-details">
-                            {project.client_name && (
-                              <div className="detail-item">
-                                <FaBuilding className="detail-icon" />
-                                <span>Client: {project.client_name}</span>
-                              </div>
-                            )}
-                            
-                            {project.project_value && (
-                              <div className="detail-item">
-                                <FaDollarSign className="detail-icon" />
-                                <span>Value: {formatCurrency(project.project_value)}</span>
-                              </div>
-                            )}
-                            
-                            {project.start_date && (
-                              <div className="detail-item">
-                                <FaCalendar className="detail-icon" />
-                                <span>Start: {formatDate(project.start_date)}</span>
-                              </div>
-                            )}
+                        ) : (
+                          <div className="no-projects">
+                            <p>No matching projects found for this project type.</p>
                           </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="no-projects">
-                      <p>No matching projects found for this project type.</p>
-                    </div>
-                  )}
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
 
                 <div className="modal-actions">
