@@ -40,7 +40,7 @@ const UpdateProjectTypeModal = ({ isOpen, onClose, userId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Sorting - local sorting only
-  const [sortField, setSortField] = useState('project_id');
+  const [sortField, setSortField] = useState('project_number');
   const [sortDirection, setSortDirection] = useState('asc');
   
   // Project type options for dropdown
@@ -594,8 +594,8 @@ const UpdateProjectTypeModal = ({ isOpen, onClose, userId }) => {
                 <table className="projects-table">
                   <thead>
                     <tr>
-                      <th onClick={() => handleSort('project_id')}>
-                        Project Number {getSortIcon('project_id')}
+                      <th onClick={() => handleSort('project_number')}>
+                        Project Number {getSortIcon('project_number')}
                       </th>
                       <th onClick={() => handleSort('project_name')}>
                         Project Name {getSortIcon('project_name')}
@@ -612,7 +612,7 @@ const UpdateProjectTypeModal = ({ isOpen, onClose, userId }) => {
                   <tbody>
                     {filteredProjects.map((project) => (
                       <tr key={project.project_id}>
-                        <td className="project-id">{project.project_id}</td>
+                        <td className="project-id">{project.project_number || project.project_id}</td>
                         <td className="project-name" title={project.project_name}>
                           {project.project_name}
                         </td>

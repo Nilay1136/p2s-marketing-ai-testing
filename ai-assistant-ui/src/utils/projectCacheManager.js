@@ -142,6 +142,31 @@ export class ProjectCacheManager {
     
     let filtered = [...projects];
 
+    // Filter out projects where project_number starts with '0000' (exclude them)
+    const beforeFilter = filtered.length;
+    filtered = filtered.filter(project => {
+      const projectNumber = project.project_number || '';
+      
+      // Check if project_number starts with '0000'
+      const shouldExclude = projectNumber.startsWith('0000');
+      
+      // Debug logging for projects we're filtering
+      if (shouldExclude) {
+        console.log('Filtering out project with project_number starting with 0000:', {
+          project_id: project.project_id,
+          project_number: projectNumber,
+          project_name: project.project_name
+        });
+      }
+      
+      // Exclude if project_number starts with '0000'
+      return !shouldExclude;
+    });
+    
+    console.log(`Filtered out ${beforeFilter - filtered.length} projects with project_number starting with '0000'`);
+    
+    console.log(`Filtered out ${beforeFilter - filtered.length} projects starting with '0000'`);
+
     // Filter by year
     if (year && year !== 'all') {
       filtered = filtered.filter(project => {
@@ -155,17 +180,18 @@ export class ProjectCacheManager {
       filtered = filtered.filter(project => project.project_type === type);
     }
 
-    // Filter by search term (search in project name and project ID)
+    // Filter by search term (search in project name, project ID, and project number)
     if (search && search.trim()) {
       const searchTerm = search.trim().toLowerCase();
       filtered = filtered.filter(project => {
         const projectName = (project.project_name || '').toLowerCase();
         const projectId = (project.project_id || '').toLowerCase();
-        return projectName.includes(searchTerm) || projectId.includes(searchTerm);
+        const projectNumber = (project.project_number || '').toLowerCase();
+        return projectName.includes(searchTerm) || projectId.includes(searchTerm) || projectNumber.includes(searchTerm);
       });
     }
 
-    console.log(`Filtered from ${projects.length} to ${filtered.length} projects`);
+    console.log(`Filtered from ${projects.length} to ${filtered.length} projects (excluded projects with project_number starting with '0000')`);
     return filtered;
   }
 
@@ -176,7 +202,7 @@ export class ProjectCacheManager {
    * @param {string} direction - Sort direction ('asc' or 'desc')
    * @returns {Array} - Sorted projects
    */
-  static sortProjects(projects, field = 'project_id', direction = 'asc') {
+  static sortProjects(projects, field = 'project_number', direction = 'asc') {
     if (!Array.isArray(projects)) return [];
 
     const sorted = [...projects].sort((a, b) => {
