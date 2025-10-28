@@ -306,6 +306,22 @@
   gap: 24px;
 }
 
+/* Development Notice */
+.dev-notice {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.dev-notice p {
+  margin: 0;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .analysis-results h3, .matching-projects h3 {
   margin: 0 0 16px 0;
   color: rgb(35, 21, 32);
@@ -859,6 +875,226 @@
   }
 }
 
+/* Similarity Score Styles */
+.project-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.similarity-badge {
+  background: linear-gradient(135deg, rgb(52, 106, 134), rgb(67, 120, 147));
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 4px rgba(52, 106, 134, 0.2);
+}
+
+.similarity-icon {
+  font-size: 10px;
+}
+
+.similarity-detail {
+  color: rgb(52, 106, 134);
+  font-weight: 600;
+}
+
+.similarity-detail .detail-icon {
+  color: rgb(52, 106, 134);
+}
+
+/* Content Archives Styles */
+.content-archives {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(52, 106, 134, 0.2);
+}
+
+.content-archives h5 {
+  margin: 0 0 8px 0;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.archive-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.archive-button {
+  background: rgba(52, 106, 134, 0.1);
+  color: rgb(52, 106, 134);
+  border: 1px solid rgba(52, 106, 134, 0.3);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.archive-button:hover {
+  background: rgba(52, 106, 134, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(52, 106, 134, 0.2);
+}
+
+.archive-icon {
+  font-size: 10px;
+}
+
+/* Content Archive Modal Styles */
+.content-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(35, 21, 32, 0.8);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.content-modal {
+  background-color: rgb(229, 231, 230);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  height: 80vh;
+  max-height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(35, 21, 32, 0.4);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.content-modal-header {
+  background-color: rgb(52, 106, 134);
+  color: rgb(229, 231, 230);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgb(35, 21, 32);
+}
+
+.content-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.content-modal-close {
+  background: none;
+  border: none;
+  color: rgb(229, 231, 230);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-modal-close:hover {
+  background-color: rgba(229, 231, 230, 0.1);
+}
+
+.content-modal-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: white;
+}
+
+.content-html {
+  font-family: 'GT Walsheim', sans-serif;
+  line-height: 1.6;
+  color: rgb(35, 21, 32);
+}
+
+.content-html h1,
+.content-html h2,
+.content-html h3,
+.content-html h4,
+.content-html h5,
+.content-html h6 {
+  color: rgb(52, 106, 134);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.content-html p {
+  margin-bottom: 16px;
+}
+
+.content-html ul,
+.content-html ol {
+  margin-bottom: 16px;
+  padding-left: 20px;
+}
+
+.content-html li {
+  margin-bottom: 8px;
+}
+
+.content-html table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.content-html th,
+.content-html td {
+  border: 1px solid rgba(52, 106, 134, 0.2);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.content-html th {
+  background-color: rgba(52, 106, 134, 0.1);
+  font-weight: 600;
+}
+
+/* Content modal scrollbar */
+.content-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-modal-body::-webkit-scrollbar-track {
+  background: rgba(229, 231, 230, 0.5);
+  border-radius: 4px;
+}
+
+.content-modal-body::-webkit-scrollbar-thumb {
+  background: rgb(52, 106, 134);
+  border-radius: 4px;
+}
+
+.content-modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgb(35, 21, 32);
+}
+
 /* Focus states for accessibility */
 .close-button:focus {
   outline: 2px solid rgb(229, 231, 230);
@@ -868,6 +1104,16 @@
 .change-file-btn:focus,
 .analyze-btn:focus,
 .new-analysis-btn:focus {
+  outline: 2px solid rgb(229, 231, 230);
+  outline-offset: 2px;
+}
+
+.archive-button:focus {
+  outline: 2px solid rgb(52, 106, 134);
+  outline-offset: 2px;
+}
+
+.content-modal-close:focus {
   outline: 2px solid rgb(229, 231, 230);
   outline-offset: 2px;
 }
@@ -891,5 +1137,46 @@
   
   .upload-placeholder {
     border: 2px solid rgb(35, 21, 32);
+  }
+
+  .content-modal {
+    border: 2px solid rgb(35, 21, 32);
+  }
+
+  .archive-button {
+    border: 2px solid rgb(52, 106, 134);
+  }
+}
+
+/* Responsive adjustments for new features */
+@media (max-width: 768px) {
+  .project-badges {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .archive-buttons {
+    flex-direction: column;
+  }
+
+  .archive-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .content-modal {
+    width: 95%;
+    height: 85vh;
+    margin: 10px;
+  }
+
+  .content-modal-body {
+    padding: 16px;
+  }
+
+  .similarity-badge {
+    font-size: 11px;
+    padding: 3px 6px;
   }
 }
