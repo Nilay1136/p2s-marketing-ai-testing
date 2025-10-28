@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign } from 'react-icons/fa';
+import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign, FaEye, FaPercentage } from 'react-icons/fa';
 import { toast } from 'react-toastify';
-import { API_ENDPOINTS } from './apiConfig';
+import { API_ENDPOINTS, API_CONFIG } from './apiConfig';
 import './ProjectProfilesModal.css';
 
 const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
@@ -12,6 +12,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   const [matchingProjects, setMatchingProjects] = useState([]);
   const [description, setDescription] = useState('');
   const [step, setStep] = useState('upload'); // 'upload', 'results'
+  const [selectedContentArchive, setSelectedContentArchive] = useState(null);
+  const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleClose = () => {
@@ -23,6 +25,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     setMatchingProjects([]);
     setDescription('');
     setStep('upload');
+    setSelectedContentArchive(null);
+    setIsContentModalOpen(false);
     onClose();
   };
 
@@ -73,8 +77,11 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
         formData.append('description', description.trim());
       }
       formData.append('project_limit', '50');
+      formData.append('enable_similarity', 'true');
+      formData.append('similarity_threshold', '0.1');
+      formData.append('top_similar_count', '10');
 
-      const response = await fetch(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.RFP.ANALYZE_AND_MATCH}`, {
+      const response = await fetch(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.RFP.ANALYZE_WITH_SIMILARITY}`, {
         method: 'POST',
         body: formData,
       });
@@ -88,7 +95,11 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
       
       if (data.rfp_analysis && data.rfp_analysis.success) {
         setAnalysisResult(data.rfp_analysis);
-        setMatchingProjects(data.matching_projects.projects || []);
+        
+        // Get projects from response
+        let projects = data.matching_projects.projects || [];
+        
+        setMatchingProjects(projects);
         setStep('results');
         toast.success('RFP analysis completed successfully!');
       } else {
@@ -101,6 +112,16 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleContentArchiveClick = (contentArchive) => {
+    setSelectedContentArchive(contentArchive);
+    setIsContentModalOpen(true);
+  };
+
+  const handleContentModalClose = () => {
+    setSelectedContentArchive(null);
+    setIsContentModalOpen(false);
   };
 
   const formatCurrency = (amount) => {
@@ -226,6 +247,7 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
               <div className="results-section">
                 <div className="analysis-results">
                   <h3>Analysis Results</h3>
+                  
                   <div className="analysis-card">
                     <div className="analysis-header">
                       <FaProjectDiagram className="project-icon" />
@@ -263,12 +285,20 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                         {filteredProjects.length > 0 ? (
                           <div className="projects-list">
                             {filteredProjects
-                              .sort((a, b) => (b.project_contract_labor || 0) - (a.project_contract_labor || 0))
+                              .sort((a, b) => (b.similarity_score || 0) - (a.similarity_score || 0))
                               .map((project, index) => (
                                 <div key={project.project_id || index} className="project-card">
                                   <div className="project-header">
                                     <h4 className="project-name">{project.project_name || 'Unnamed Project'}</h4>
-                                    <span className="project-type-badge">{project.project_type}</span>
+                                    <div className="project-badges">
+                                      <span className="project-type-badge">{project.project_type}</span>
+                                      {project.similarity_percentage && (
+                                        <span className="similarity-badge">
+                                          <FaPercentage className="similarity-icon" />
+                                          {project.similarity_percentage}
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
                                   
                                   <div className="project-details">
@@ -281,7 +311,32 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                       <FaDollarSign className="detail-icon" />
                                       <span>Value: {formatCurrency(project.project_contract_labor || 0)}</span>
                                     </div>
+
+                                    {project.similarity_score && (
+                                      <div className="detail-item similarity-detail">
+                                        <FaPercentage className="detail-icon" />
+                                        <span>Similarity: {(project.similarity_score * 100).toFixed(1)}%</span>
+                                      </div>
+                                    )}
                                   </div>
+
+                                  {project.content_archives && project.content_archives.length > 0 && (
+                                    <div className="content-archives">
+                                      <h5>Available Content:</h5>
+                                      <div className="archive-buttons">
+                                        {project.content_archives.map((archive, archiveIndex) => (
+                                          <button
+                                            key={archive.id || archiveIndex}
+                                            className="archive-button"
+                                            onClick={() => handleContentArchiveClick(archive)}
+                                          >
+                                            <FaEye className="archive-icon" />
+                                            {archive.name || `Content ${archiveIndex + 1}`}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               ))}
                           </div>
@@ -313,6 +368,26 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
             </>
           )}
         </div>
+
+        {/* Content Archive Modal */}
+        {isContentModalOpen && selectedContentArchive && (
+          <div className="content-modal-overlay" onClick={handleContentModalClose}>
+            <div className="content-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="content-modal-header">
+                <h3>{selectedContentArchive.name || 'Project Content'}</h3>
+                <button className="content-modal-close" onClick={handleContentModalClose}>
+                  <FaTimes />
+                </button>
+              </div>
+              <div className="content-modal-body">
+                <div 
+                  className="content-html"
+                  dangerouslySetInnerHTML={{ __html: selectedContentArchive.content }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 // export const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
-export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net/"; //test-p2s-marketing-assistants.azurewebsites.net/
+export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net"; //test-p2s-marketing-assistants.azurewebsites.net/
 
 // API Endpoints - aligned with backend
 export const API_ENDPOINTS = {
@@ -33,7 +33,8 @@ export const API_ENDPOINTS = {
   // RFP and Project Profiles
   RFP: {
     ANALYZE: '/rfp/analyze',
-    ANALYZE_AND_MATCH: '/rfp/analyze-and-match'
+    ANALYZE_AND_MATCH: '/rfp/analyze-and-match',
+    ANALYZE_WITH_SIMILARITY: '/rfp-projects/rfp/analyze-with-similarity'
   },
   
   // Projects - Updated to use correct endpoints
@@ -47,7 +48,8 @@ export const API_ENDPOINTS = {
     GET_TYPE: (projectId) => `/projects/${projectId}/type`,
     STATS: '/projects/stats',
     BY_YEAR: (year) => `/projects/by-year/${year}`,
-    AVAILABLE_YEARS: '/projects/years/available'
+    AVAILABLE_YEARS: '/projects/years/available',
+    CONTENT_ARCHIVES: (projectId) => `/projects/${projectId}/content-archives`
   }
 };
 
