@@ -1180,3 +1180,534 @@
     padding: 3px 6px;
   }
 }
+
+/* Minimal Toggle Styles */
+.results-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 16px;
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid rgba(52, 106, 134, 0.2);
+}
+
+.results-toggle .toggle-label {
+  font-weight: 600;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+}
+
+.toggle-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-btn {
+  padding: 8px 16px;
+  border: 2px solid rgb(52, 106, 134);
+  background: white;
+  color: rgb(52, 106, 134);
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.toggle-btn:hover {
+  background: rgba(52, 106, 134, 0.1);
+}
+
+.toggle-btn.active {
+  background: rgb(52, 106, 134);
+  color: white;
+}
+
+.toggle-btn.active:hover {
+  background: rgb(45, 95, 120);
+}
+
+/* Project profile specific styles */
+.project-profile-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.project-profile-card:hover {
+  box-shadow: 0 6px 16px rgba(35, 21, 32, 0.2);
+  transform: translateY(-2px);
+}
+
+.project-profile-card.clickable {
+  position: relative;
+}
+
+.profile-badge {
+  background-color: rgb(76, 144, 181);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-icon {
+  font-size: 10px;
+}
+
+.click-hint {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: rgba(52, 106, 134, 0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgb(52, 106, 134);
+  font-style: italic;
+}
+
+.hint-icon {
+  font-size: 11px;
+}
+
+.archive-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgb(52, 106, 134);
+  font-style: italic;
+}
+
+/* Project Profile Modal Styles */
+.project-profile-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(35, 21, 32, 0.3);
+}
+
+.project-profile-body {
+  padding: 24px;
+}
+
+.profile-details-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.detail-section {
+  border: 1px solid rgba(52, 106, 134, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  background: rgba(229, 231, 230, 0.3);
+}
+
+.detail-section.full-width {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  margin: 0 0 12px 0;
+  color: rgb(52, 106, 134);
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid rgb(52, 106, 134);
+  padding-bottom: 6px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 8px;
+  min-height: 20px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: rgb(35, 21, 32);
+  min-width: 140px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.detail-value {
+  color: rgb(52, 106, 134);
+  flex: 1;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.detail-description {
+  color: rgb(35, 21, 32);
+  line-height: 1.5;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.archive-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.archive-button-detailed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: white;
+  border: 2px solid rgb(52, 106, 134);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.archive-button-detailed:hover {
+  background: rgba(52, 106, 134, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(35, 21, 32, 0.1);
+}
+
+.archive-info-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.archive-name {
+  font-weight: 600;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+}
+
+.archive-meta {
+  font-size: 12px;
+  color: rgb(52, 106, 134);
+  font-style: italic;
+}
+
+/* Responsive adjustments for toggle */
+@media (max-width: 768px) {
+  .results-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .toggle-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .toggle-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .project-profile-modal {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .profile-details-grid {
+    gap: 16px;
+  }
+
+  .detail-section {
+    padding: 12px;
+  }
+
+  .detail-label {
+    min-width: 100px;
+  }
+
+  .archive-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .data-source-toggle {
+    padding: 16px;
+  }
+
+  .toggle-container {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .project-profile-modal {
+    width: 95%;
+    max-height: 90vh;
+  }
+
+  .profile-details-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Data Source Toggle Styles */
+.data-source-toggle {
+  background-color: white;
+  border: 2px solid rgb(52, 106, 134);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toggle-text {
+  font-weight: 600;
+  color: rgb(35, 21, 32);
+  font-size: 16px;
+}
+
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  justify-content: center;
+}
+
+.toggle-option {
+  font-weight: 500;
+  color: rgb(52, 106, 134);
+  transition: all 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.toggle-option.active {
+  background-color: rgb(52, 106, 134);
+  color: white;
+  font-weight: 600;
+}
+
+.toggle-switch {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: rgb(52, 106, 134);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  padding: 4px;
+}
+
+.toggle-switch:hover {
+  transform: scale(1.1);
+}
+
+.toggle-description {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 12px;
+  background-color: rgb(229, 231, 230);
+  border-radius: 8px;
+}
+
+.info-icon {
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+/* Project Profile Card Styles */
+.project-profile-card {
+  border: 2px solid rgb(52, 106, 134) !important;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.project-profile-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(35, 21, 32, 0.2);
+  border-color: rgb(35, 21, 32) !important;
+}
+
+.project-profile-card.clickable {
+  background: linear-gradient(135deg, white 0%, rgb(249, 250, 249) 100%);
+}
+
+.profile-badge {
+  background-color: rgb(35, 21, 32);
+  color: rgb(229, 231, 230);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.profile-icon {
+  font-size: 10px;
+}
+
+.archive-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+.click-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: rgb(229, 231, 230);
+  border-radius: 6px;
+  color: rgb(52, 106, 134);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.hint-icon {
+  font-size: 12px;
+}
+
+/* Project Profile Detail Modal */
+.project-profile-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 1000px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(35, 21, 32, 0.3);
+  font-family: 'GT Walsheim', sans-serif;
+}
+
+.project-profile-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.profile-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.detail-section {
+  background-color: rgb(249, 250, 249);
+  border: 1px solid rgb(229, 231, 230);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.detail-section.full-width {
+  grid-column: 1 / -1;
+}
+
+.section-title {
+  color: rgb(35, 21, 32);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgb(52, 106, 134);
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 12px;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: rgb(52, 106, 134);
+  min-width: 140px;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.detail-value {
+  color: rgb(35, 21, 32);
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.detail-description {
+  color: rgb(35, 21, 32);
+  line-height: 1.6;
+  font-size: 14px;
+  background-color: white;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid rgb(229, 231, 230);
+}
+
+/* Archive buttons in detail modal */
+.archive-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.archive-button-detailed {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: white;
+  border: 2px solid rgb(52, 106, 134);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.archive-button-detailed:hover {
+  background-color: rgb(52, 106, 134);
+  color: white;
+}
+
+.archive-info-detailed {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.archive-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.archive-meta {
+  font-size: 12px;
+  opacity: 0.8;
+}
