@@ -1,5 +1,5 @@
 // export const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
-export const API_BASE_URL = "http://localhost:8000"; //test-p2s-marketing-assistants.azurewebsites.net/
+export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net/"; //test-p2s-marketing-assistants.azurewebsites.net/
 
 // API Endpoints - aligned with backend
 export const API_ENDPOINTS = {
