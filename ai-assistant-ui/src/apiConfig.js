@@ -1,5 +1,5 @@
 // export const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
-export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net/"; //test-p2s-marketing-assistants.azurewebsites.net/
+export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net"; //test-p2s-marketing-assistants.azurewebsites.net/
 
 // API Endpoints - aligned with backend
 export const API_ENDPOINTS = {
@@ -56,6 +56,18 @@ export const API_ENDPOINTS = {
   PROJECT_PROFILES: {
     BY_TYPE: (projectType) => `/project-profiles/by-type?project_type=${encodeURIComponent(projectType)}`,
     SEARCH: '/project-profiles/search'
+  },
+  
+  // Timecards endpoints
+  TIMECARDS: {
+    BY_PROJECT: (projectId) => `/timecards/project/${projectId}`,
+    RESOURCES_SUMMARY: (projectId) => `/timecards/project/${projectId}/resources-summary`
+  },
+  
+  // Resume endpoints
+  RESUMES: {
+    BY_CONTACT_ID: (contactId) => `/resumes/contact/${contactId}`,
+    BY_TIMECARD_CONTACT_ID: (timecardContactId) => `/resumes/contactid/${timecardContactId}`
   }
 };
 

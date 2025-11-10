@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign, FaEye, FaPercentage, FaToggleOn, FaToggleOff, FaInfoCircle } from 'react-icons/fa';
+import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign, FaEye, FaPercentage, FaToggleOn, FaToggleOff, FaInfoCircle, FaUsers } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, API_CONFIG } from './apiConfig';
+import ResourcesModal from './ResourcesModal';
 import './ProjectProfilesModal.css';
 
 const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
@@ -21,6 +22,10 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   const [isProjectProfileModalOpen, setIsProjectProfileModalOpen] = useState(false);
   const [projectProfiles, setProjectProfiles] = useState([]);
   
+  // Resources modal state
+  const [isResourcesModalOpen, setIsResourcesModalOpen] = useState(false);
+  const [selectedProjectForResources, setSelectedProjectForResources] = useState(null);
+  
   const fileInputRef = useRef(null);
 
   const handleClose = () => {
@@ -37,6 +42,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     setIsContentModalOpen(false);
     setSelectedProjectProfile(null);
     setIsProjectProfileModalOpen(false);
+    setIsResourcesModalOpen(false);
+    setSelectedProjectForResources(null);
     onClose();
   };
 
@@ -180,6 +187,17 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   const handleProjectProfileModalClose = () => {
     setSelectedProjectProfile(null);
     setIsProjectProfileModalOpen(false);
+  };
+
+  const handleViewResourcesClick = (project, event) => {
+    event.stopPropagation(); // Prevent triggering project profile modal
+    setSelectedProjectForResources(project);
+    setIsResourcesModalOpen(true);
+  };
+
+  const handleResourcesModalClose = () => {
+    setIsResourcesModalOpen(false);
+    setSelectedProjectForResources(null);
   };
 
   const formatCurrency = (amount) => {
@@ -415,6 +433,18 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                       </div>
                                     </div>
                                   )}
+                                  
+                                  {/* View Resources Button */}
+                                  <div className="project-actions">
+                                    <button
+                                      className="view-resources-button"
+                                      onClick={(e) => handleViewResourcesClick(project, e)}
+                                      title="View project resources and team members"
+                                    >
+                                      <FaUsers className="button-icon" />
+                                      View Resources
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                           </div>
@@ -473,6 +503,18 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                 </div>
                               )}
 
+                              {/* View Resources Button */}
+                              <div className="project-actions">
+                                <button
+                                  className="view-resources-button"
+                                  onClick={(e) => handleViewResourcesClick(profile, e)}
+                                  title="View project resources and team members"
+                                >
+                                  <FaUsers className="button-icon" />
+                                  View Resources
+                                </button>
+                              </div>
+
                               <div className="click-hint">
                                 <FaInfoCircle className="hint-icon" />
                                 <span>Click to view detailed project profile</span>
@@ -508,181 +550,205 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
             </>
           )}
         </div>
-
-        {/* Content Archive Modal */}
-        {isContentModalOpen && selectedContentArchive && (
-          <div className="content-modal-overlay" onClick={handleContentModalClose}>
-            <div className="content-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="content-modal-header">
-                <h3>{selectedContentArchive.name || 'Project Content'}</h3>
-                <button className="content-modal-close" onClick={handleContentModalClose}>
-                  <FaTimes />
-                </button>
-              </div>
-              <div className="content-modal-body">
-                <div 
-                  className="content-html"
-                  dangerouslySetInnerHTML={{ __html: selectedContentArchive.content }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Project Profile Detail Modal */}
-        {isProjectProfileModalOpen && selectedProjectProfile && (
-          <div className="content-modal-overlay" onClick={handleProjectProfileModalClose}>
-            <div className="project-profile-modal" onClick={(e) => e.stopPropagation()}>
-              <div className="content-modal-header">
-                <h3>{selectedProjectProfile.project_name || 'Project Profile Details'}</h3>
-                <button className="content-modal-close" onClick={handleProjectProfileModalClose}>
-                  <FaTimes />
-                </button>
-              </div>
-              <div className="project-profile-body">
-                <div className="profile-details-grid">
-                  {/* Basic Information */}
-                  <div className="detail-section">
-                    <h4 className="section-title">Basic Information</h4>
-                    <div className="detail-row">
-                      <span className="detail-label">Project ID:</span>
-                      <span className="detail-value">{selectedProjectProfile.project_id || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Project Name:</span>
-                      <span className="detail-value">{selectedProjectProfile.project_name || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Project Type:</span>
-                      <span className="detail-value">{selectedProjectProfile.project_type || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Facility Owner:</span>
-                      <span className="detail-value">{selectedProjectProfile.facility_owner || 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  {/* Location & Dates */}
-                  <div className="detail-section">
-                    <h4 className="section-title">Location & Timeline</h4>
-                    <div className="detail-row">
-                      <span className="detail-label">Location:</span>
-                      <span className="detail-value">{selectedProjectProfile.location || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Location State:</span>
-                      <span className="detail-value">{selectedProjectProfile.location_state || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Project Dates:</span>
-                      <span className="detail-value">{selectedProjectProfile.project_dates || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Start Date:</span>
-                      <span className="detail-value">{formatDate(selectedProjectProfile.start_date)}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">End Date:</span>
-                      <span className="detail-value">{formatDate(selectedProjectProfile.end_date)}</span>
-                    </div>
-                  </div>
-
-                  {/* Financial Information */}
-                  <div className="detail-section">
-                    <h4 className="section-title">Financial Information</h4>
-                    <div className="detail-row">
-                      <span className="detail-label">Contract Value:</span>
-                      <span className="detail-value">{formatCurrency(selectedProjectProfile.contract_value)}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Construction Cost:</span>
-                      <span className="detail-value">{formatCurrency(selectedProjectProfile.construction_cost)}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Project Size:</span>
-                      <span className="detail-value">{selectedProjectProfile.project_size || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Delivery Method:</span>
-                      <span className="detail-value">{selectedProjectProfile.delivery_method || 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  {/* Team & Contact Information */}
-                  <div className="detail-section">
-                    <h4 className="section-title">Team & Contact</h4>
-                    <div className="detail-row">
-                      <span className="detail-label">Key Staff/Project Team:</span>
-                      <span className="detail-value">{selectedProjectProfile.key_staff_project_team || 'N/A'}</span>
-                    </div>
-                    <div className="detail-row">
-                      <span className="detail-label">Client Contact:</span>
-                      <span className="detail-value">{selectedProjectProfile.client_contact || 'N/A'}</span>
-                    </div>
-                  </div>
-
-                  {/* Description & Solutions */}
-                  {selectedProjectProfile.our_solutions_description && (
-                    <div className="detail-section full-width">
-                      <h4 className="section-title">Our Solutions Description</h4>
-                      <div className="detail-description">
-                        {selectedProjectProfile.our_solutions_description}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Awards */}
-                  {selectedProjectProfile.awards && (
-                    <div className="detail-section full-width">
-                      <h4 className="section-title">Awards</h4>
-                      <div className="detail-description">
-                        {selectedProjectProfile.awards}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Project Lessons */}
-                  {selectedProjectProfile.project_lessons && (
-                    <div className="detail-section full-width">
-                      <h4 className="section-title">Project Lessons</h4>
-                      <div className="detail-description">
-                        {selectedProjectProfile.project_lessons}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Content Archives */}
-                  {selectedProjectProfile.content_archives && selectedProjectProfile.content_archives.length > 0 && (
-                    <div className="detail-section full-width">
-                      <h4 className="section-title">Content Archives ({selectedProjectProfile.content_archives.length})</h4>
-                      <div className="archive-buttons-grid">
-                        {selectedProjectProfile.content_archives.map((archive, index) => (
-                          <button
-                            key={archive.content_archive_id || index}
-                            className="archive-button-detailed"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleContentArchiveClick(archive);
-                            }}
-                          >
-                            <FaEye className="archive-icon" />
-                            <div className="archive-info-detailed">
-                              <span className="archive-name">{archive.name || `Archive ${index + 1}`}</span>
-                              <span className="archive-meta">
-                                {archive.created_date && `Created: ${formatDate(archive.created_date)}`}
-                              </span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Content Archive Modal - Moved outside main modal for proper layering */}
+      {isContentModalOpen && selectedContentArchive && (
+        <div 
+          className="content-modal-overlay" 
+          onClick={handleContentModalClose}
+          style={{
+            background: 'rgba(35, 21, 32, 0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <div className="content-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="content-modal-header">
+              <h3>{selectedContentArchive.name || 'Project Content'}</h3>
+              <button className="content-modal-close" onClick={handleContentModalClose}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="content-modal-body">
+              <div 
+                className="content-html"
+                dangerouslySetInnerHTML={{ __html: selectedContentArchive.content }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Project Profile Detail Modal - Moved outside main modal for proper layering */}
+      {isProjectProfileModalOpen && selectedProjectProfile && (
+        <div 
+          className="content-modal-overlay" 
+          onClick={handleProjectProfileModalClose}
+          style={{
+            background: 'rgba(35, 21, 32, 0.6)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)'
+          }}
+        >
+          <div className="project-profile-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="content-modal-header">
+              <h3>{selectedProjectProfile.project_name || 'Project Profile Details'}</h3>
+              <button className="content-modal-close" onClick={handleProjectProfileModalClose}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="project-profile-body">
+              <div className="profile-details-grid">
+                {/* Basic Information */}
+                <div className="detail-section">
+                  <h4 className="section-title">Basic Information</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">Project ID:</span>
+                    <span className="detail-value">{selectedProjectProfile.project_id || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Project Name:</span>
+                    <span className="detail-value">{selectedProjectProfile.project_name || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Project Type:</span>
+                    <span className="detail-value">{selectedProjectProfile.project_type || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Facility Owner:</span>
+                    <span className="detail-value">{selectedProjectProfile.facility_owner || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {/* Location & Dates */}
+                <div className="detail-section">
+                  <h4 className="section-title">Location & Timeline</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">Location:</span>
+                    <span className="detail-value">{selectedProjectProfile.location || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Location State:</span>
+                    <span className="detail-value">{selectedProjectProfile.location_state || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Project Dates:</span>
+                    <span className="detail-value">{selectedProjectProfile.project_dates || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Start Date:</span>
+                    <span className="detail-value">{formatDate(selectedProjectProfile.start_date)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">End Date:</span>
+                    <span className="detail-value">{formatDate(selectedProjectProfile.end_date)}</span>
+                  </div>
+                </div>
+
+                {/* Financial Information */}
+                <div className="detail-section">
+                  <h4 className="section-title">Financial Information</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">Contract Value:</span>
+                    <span className="detail-value">{formatCurrency(selectedProjectProfile.contract_value)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Construction Cost:</span>
+                    <span className="detail-value">{formatCurrency(selectedProjectProfile.construction_cost)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Project Size:</span>
+                    <span className="detail-value">{selectedProjectProfile.project_size || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Delivery Method:</span>
+                    <span className="detail-value">{selectedProjectProfile.delivery_method || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {/* Team & Contact Information */}
+                <div className="detail-section">
+                  <h4 className="section-title">Team & Contact</h4>
+                  <div className="detail-row">
+                    <span className="detail-label">Key Staff/Project Team:</span>
+                    <span className="detail-value">{selectedProjectProfile.key_staff_project_team || 'N/A'}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Client Contact:</span>
+                    <span className="detail-value">{selectedProjectProfile.client_contact || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {/* Description & Solutions */}
+                {selectedProjectProfile.our_solutions_description && (
+                  <div className="detail-section full-width">
+                    <h4 className="section-title">Our Solutions Description</h4>
+                    <div className="detail-description">
+                      {selectedProjectProfile.our_solutions_description}
+                    </div>
+                  </div>
+                )}
+
+                {/* Awards */}
+                {selectedProjectProfile.awards && (
+                  <div className="detail-section full-width">
+                    <h4 className="section-title">Awards</h4>
+                    <div className="detail-description">
+                      {selectedProjectProfile.awards}
+                    </div>
+                  </div>
+                )}
+
+                {/* Project Lessons */}
+                {selectedProjectProfile.project_lessons && (
+                  <div className="detail-section full-width">
+                    <h4 className="section-title">Project Lessons</h4>
+                    <div className="detail-description">
+                      {selectedProjectProfile.project_lessons}
+                    </div>
+                  </div>
+                )}
+
+                {/* Content Archives */}
+                {selectedProjectProfile.content_archives && selectedProjectProfile.content_archives.length > 0 && (
+                  <div className="detail-section full-width">
+                    <h4 className="section-title">Content Archives ({selectedProjectProfile.content_archives.length})</h4>
+                    <div className="archive-buttons-grid">
+                      {selectedProjectProfile.content_archives.map((archive, index) => (
+                        <button
+                          key={archive.content_archive_id || index}
+                          className="archive-button-detailed"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleContentArchiveClick(archive);
+                          }}
+                        >
+                          <FaEye className="archive-icon" />
+                          <div className="archive-info-detailed">
+                            <span className="archive-name">{archive.name || `Archive ${index + 1}`}</span>
+                            <span className="archive-meta">
+                              {archive.created_date && `Created: ${formatDate(archive.created_date)}`}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resources Modal */}
+      <ResourcesModal
+        isOpen={isResourcesModalOpen}
+        onClose={handleResourcesModalClose}
+        projectId={selectedProjectForResources?.project_id}
+        projectName={selectedProjectForResources?.project_name || 'Unknown Project'}
+      />
     </div>
   );
 };
