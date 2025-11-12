@@ -1,5 +1,5 @@
 // export const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:8000";
-export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net"; //test-p2s-marketing-assistants.azurewebsites.net/
+export const API_BASE_URL = "https://test-p2s-marketing-assistants.azurewebsites.net/"; //test-p2s-marketing-assistants.azurewebsites.net/
 
 // API Endpoints - aligned with backend
 export const API_ENDPOINTS = {
@@ -40,6 +40,7 @@ export const API_ENDPOINTS = {
   // Projects - Updated to use correct endpoints
   PROJECTS: {
     BY_TYPE: (projectType) => `/projects/by-type/${projectType}`,
+    WITH_PROFILES_BY_TYPE: (projectType) => `/projects/with-profiles/by-type?project_type=${encodeURIComponent(projectType)}`,
     SEARCH: '/projects/search',
     BY_ID: (projectId) => `/projects/${projectId}`,
     TYPES: '/projects/types/list',
