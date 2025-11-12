@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaTimes, FaUser, FaClock, FaCalendarAlt, FaSpinner, FaBuilding, FaUsers } from 'react-icons/fa';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FaTimes, FaUser, FaClock, FaCalendarAlt, FaSpinner, FaBuilding, FaUsers, FaFilter } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS } from './apiConfig';
 import ResumeModal from './ResumeModal';
@@ -11,6 +11,8 @@ const ResourcesModal = ({ isOpen, onClose, projectId, projectName }) => {
   const [error, setError] = useState(null);
   const [selectedContactId, setSelectedContactId] = useState(null);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [selectedDisciplines, setSelectedDisciplines] = useState(new Set());
+  const [availableDisciplines, setAvailableDisciplines] = useState([]);
 
   useEffect(() => {
     if (isOpen && projectId) {
@@ -38,6 +40,17 @@ const ResourcesModal = ({ isOpen, onClose, projectId, projectName }) => {
       
       if (data.success && data.resources) {
         setResources(data.resources);
+        
+        // Extract unique disciplines for filtering
+        const disciplines = [...new Set(data.resources
+          .map(resource => resource.discipline)
+          .filter(discipline => discipline && discipline !== 'N/A')
+          .sort()
+        )];
+        setAvailableDisciplines(disciplines);
+        
+        // Reset selected disciplines when new data loads
+        setSelectedDisciplines(new Set());
       } else {
         throw new Error(data.message || 'Failed to load resources');
       }
@@ -52,14 +65,73 @@ const ResourcesModal = ({ isOpen, onClose, projectId, projectName }) => {
   };
 
   const handleResourceClick = (contactId) => {
-    setSelectedContactId(contactId);
-    setIsResumeModalOpen(true);
+    if (contactId) {
+      setSelectedContactId(contactId);
+      setIsResumeModalOpen(true);
+    } else {
+      toast.warn('Contact ID not available for this resource');
+    }
   };
 
   const handleResumeModalClose = () => {
     setIsResumeModalOpen(false);
     setSelectedContactId(null);
   };
+
+  const handleDisciplineToggle = (discipline) => {
+    console.log('=== DISCIPLINE TOGGLE START ===');
+    console.log('Toggling discipline:', discipline);
+    console.log('Current selectedDisciplines:', selectedDisciplines);
+    console.log('selectedDisciplines.size:', selectedDisciplines.size);
+    console.log('selectedDisciplines type:', typeof selectedDisciplines);
+    
+    const newSelected = new Set(selectedDisciplines);
+    console.log('Created new Set:', newSelected);
+    
+    if (newSelected.has(discipline)) {
+      newSelected.delete(discipline);
+      console.log('Discipline was selected, removing it');
+    } else {
+      newSelected.add(discipline);
+      console.log('Discipline was not selected, adding it');
+    }
+    
+    console.log('New selected disciplines:', newSelected);
+    console.log('New selected disciplines size:', newSelected.size);
+    setSelectedDisciplines(newSelected);
+    console.log('=== DISCIPLINE TOGGLE END ===');
+  };
+
+  const handleShowAll = () => {
+    console.log('=== SHOW ALL START ===');
+    console.log('Clearing all filters');
+    setSelectedDisciplines(new Set());
+    console.log('=== SHOW ALL END ===');
+  };
+
+  const getFilteredResources = useMemo(() => {
+    console.log('=== MEMO RECALCULATION START ===');
+    console.log('Getting filtered resources...');
+    console.log('Selected disciplines:', selectedDisciplines);
+    console.log('Selected disciplines size:', selectedDisciplines.size);
+    console.log('Total resources:', resources.length);
+    
+    if (selectedDisciplines.size === 0) {
+      console.log('No filters applied, returning all resources');
+      console.log('=== MEMO RECALCULATION END (ALL) ===');
+      return resources;
+    }
+    
+    const filtered = resources.filter(resource => {
+      const hasMatchingDiscipline = resource.discipline && selectedDisciplines.has(resource.discipline);
+      console.log(`Resource ${resource.resource} (${resource.discipline}) matches filter:`, hasMatchingDiscipline);
+      return hasMatchingDiscipline;
+    });
+    
+    console.log('Filtered resources count:', filtered.length);
+    console.log('=== MEMO RECALCULATION END (FILTERED) ===');
+    return filtered;
+  }, [resources, selectedDisciplines]);
 
   const handleClose = () => {
     setResources([]);
@@ -144,16 +216,53 @@ const ResourcesModal = ({ isOpen, onClose, projectId, projectName }) => {
             {!isLoading && !error && resources.length > 0 && (
               <>
                 <div className="resources-summary">
-                  <h3>Resource Summary ({resources.length} resources)</h3>
+                  <h3>Resource Summary ({getFilteredResources.length} of {resources.length} resources)</h3>
                   <p className="summary-description">
                     Click on any resource to view their resume and detailed information.
                   </p>
                 </div>
 
+                {/* Discipline Filter Toggles */}
+                {availableDisciplines.length > 1 && (
+                  <div className="discipline-filters">
+                    <div className="filter-header">
+                      <FaFilter className="filter-icon" />
+                      <span>Filter by Discipline:</span>
+                    </div>
+                    <div className="filter-buttons">
+                      <button 
+                        className={`filter-button ${selectedDisciplines.size === 0 ? 'active' : ''}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('All button clicked');
+                          handleShowAll();
+                        }}
+                      >
+                        All ({resources.length})
+                      </button>
+                      {availableDisciplines.map(discipline => (
+                        <button
+                          key={discipline}
+                          className={`filter-button ${selectedDisciplines.has(discipline) ? 'active' : ''}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log('Button clicked for discipline:', discipline);
+                            handleDisciplineToggle(discipline);
+                          }}
+                        >
+                          {discipline} ({resources.filter(r => r.discipline === discipline).length})
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="resources-list">
-                  {resources.map((resource, index) => (
+                  {getFilteredResources.map((resource, index) => (
                     <div 
-                      key={resource.contactid || index} 
+                      key={`${resource.contactid || 'no-id'}-${index}-${resource.resource || 'unknown'}`}
                       className="resource-card clickable"
                       onClick={() => handleResourceClick(resource.contactid)}
                     >

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign, FaEye, FaPercentage, FaToggleOn, FaToggleOff, FaInfoCircle, FaUsers } from 'react-icons/fa';
+import { FaTimes, FaUpload, FaFileAlt, FaSpinner, FaProjectDiagram, FaBuilding, FaDollarSign, FaEye, FaPercentage, FaInfoCircle, FaUsers } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS, API_CONFIG } from './apiConfig';
 import ResourcesModal from './ResourcesModal';
@@ -16,11 +16,12 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   const [selectedContentArchive, setSelectedContentArchive] = useState(null);
   const [isContentModalOpen, setIsContentModalOpen] = useState(false);
   
-  // New state for toggle and project profiles
-  const [useProjectProfiles, setUseProjectProfiles] = useState(false);
+  // State for project profiles data
   const [selectedProjectProfile, setSelectedProjectProfile] = useState(null);
   const [isProjectProfileModalOpen, setIsProjectProfileModalOpen] = useState(false);
   const [projectProfiles, setProjectProfiles] = useState([]);
+  const [projectsWithProfiles, setProjectsWithProfiles] = useState([]);
+  const [showOnlyWithProfiles, setShowOnlyWithProfiles] = useState(false);
   
   // Resources modal state
   const [isResourcesModalOpen, setIsResourcesModalOpen] = useState(false);
@@ -36,6 +37,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     setAnalysisResult(null);
     setMatchingProjects([]);
     setProjectProfiles([]);
+    setProjectsWithProfiles([]);
+    setShowOnlyWithProfiles(false);
     setDescription('');
     setStep('upload');
     setSelectedContentArchive(null);
@@ -120,6 +123,7 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
         // Always fetch project profiles for the detected project type
         if (data.rfp_analysis.detected_project_type) {
           await fetchProjectProfiles(data.rfp_analysis.detected_project_type);
+          await fetchProjectsWithProfiles(data.rfp_analysis.detected_project_type);
         }
         
         setStep('results');
@@ -169,6 +173,38 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     }
   };
 
+  const fetchProjectsWithProfiles = async (projectType) => {
+    try {
+      // Build the URL for projects with profiles
+      const baseUrl = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.PROJECTS.WITH_PROFILES_BY_TYPE(projectType)}`;
+      const params = new URLSearchParams({
+        limit: '50'
+      });
+      
+      const response = await fetch(`${baseUrl}&${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects with profiles');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.projects) {
+        setProjectsWithProfiles(data.projects);
+      } else {
+        setProjectsWithProfiles([]);
+      }
+    } catch (error) {
+      console.error('Error fetching projects with profiles:', error);
+      setProjectsWithProfiles([]);
+    }
+  };
+
   const handleContentArchiveClick = (contentArchive) => {
     setSelectedContentArchive(contentArchive);
     setIsContentModalOpen(true);
@@ -190,9 +226,90 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   };
 
   const handleViewResourcesClick = (project, event) => {
-    event.stopPropagation(); // Prevent triggering project profile modal
+    event.stopPropagation();
     setSelectedProjectForResources(project);
     setIsResourcesModalOpen(true);
+  };
+
+  const handleViewContentArchivesClick = (project, event) => {
+    event.stopPropagation();
+    
+    // If this is a project with profiles, show the project profile directly
+    if (project.sourceType === 'withProfiles') {
+      setSelectedProjectProfile(project);
+      setIsProjectProfileModalOpen(true);
+      return;
+    }
+    
+    console.log('=== CONTENT ARCHIVES MATCHING START ===');
+    console.log('Clicked project:', project);
+    console.log('Available project profiles:', projectProfiles);
+    
+    // Try different matching strategies for regular projects
+    console.log('Trying matching strategies...');
+    
+    // Strategy 1: Exact project_id match
+    const exactIdMatch = projectProfiles.find(profile => {
+      const match = profile.project_id === project.project_id;
+      console.log(`Strategy 1 - Exact ID: ${profile.project_id} === ${project.project_id} = ${match}`);
+      return match;
+    });
+    
+    // Strategy 2: Exact project_name match
+    const exactNameMatch = projectProfiles.find(profile => {
+      const match = profile.project_name === project.project_name;
+      console.log(`Strategy 2 - Exact Name: "${profile.project_name}" === "${project.project_name}" = ${match}`);
+      return match;
+    });
+    
+    // Strategy 3: Check if project profiles use a different ID field (like ProjectID from the JSON)
+    const projectIdMatch = projectProfiles.find(profile => {
+      const match = profile.ProjectID === project.project_id;
+      console.log(`Strategy 3 - ProjectID field: ${profile.ProjectID} === ${project.project_id} = ${match}`);
+      return match;
+    });
+    
+    // Strategy 4: Fuzzy name matching (contains)
+    const fuzzyNameMatch = projectProfiles.find(profile => {
+      if (!profile.project_name || !project.project_name) return false;
+      const match = profile.project_name.toLowerCase().includes(project.project_name.toLowerCase()) ||
+                   project.project_name.toLowerCase().includes(profile.project_name.toLowerCase());
+      console.log(`Strategy 4 - Fuzzy Name: "${profile.project_name}" ~~ "${project.project_name}" = ${match}`);
+      return match;
+    });
+    
+    // Pick the best match
+    const matchingProfile = exactIdMatch || exactNameMatch || projectIdMatch || fuzzyNameMatch;
+    
+    console.log('Final matching profile:', matchingProfile);
+    console.log('=== CONTENT ARCHIVES MATCHING END ===');
+    
+    if (matchingProfile) {
+      setSelectedProjectProfile(matchingProfile);
+      setIsProjectProfileModalOpen(true);
+    } else {
+      toast.warning(`No specific content archives found for "${project.project_name}". Content archives are separate reference documents and may not exist for every project.`);
+    }
+  };
+
+  const hasContentArchives = (project) => {
+    // Check if project has direct content archives
+    if (project.content_archives && project.content_archives.length > 0) {
+      return true;
+    }
+    
+    // Check if there's a matching project profile using improved matching logic
+    const matchingProfile = projectProfiles.find(profile => 
+      // Try multiple matching strategies
+      profile.project_id === project.project_id ||
+      profile.ProjectID === project.project_id ||
+      profile.project_name === project.project_name ||
+      (profile.project_name && project.project_name && 
+       (profile.project_name.toLowerCase().includes(project.project_name.toLowerCase()) ||
+        project.project_name.toLowerCase().includes(profile.project_name.toLowerCase())))
+    );
+    
+    return matchingProfile && matchingProfile.content_archives && matchingProfile.content_archives.length > 0;
   };
 
   const handleResourcesModalClose = () => {
@@ -346,41 +463,57 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                   </div>
                 </div>
 
-                {/* Minimal Data Source Toggle */}
-                <div className="results-toggle">
-                  <span className="toggle-label">View:</span>
-                  <div className="toggle-buttons">
-                    <button 
-                      className={`toggle-btn ${!useProjectProfiles ? 'active' : ''}`}
-                      onClick={() => setUseProjectProfiles(false)}
-                    >
-                      Projects ({matchingProjects.filter(p => !(p.project_number || '').startsWith('0000')).length})
-                    </button>
-                    <button 
-                      className={`toggle-btn ${useProjectProfiles ? 'active' : ''}`}
-                      onClick={() => setUseProjectProfiles(true)}
-                    >
-                      Project Profiles ({projectProfiles.length})
-                    </button>
-                  </div>
-                </div>
-
                 <div className="matching-projects">
-                  {/* Regular Projects Section */}
-                  {!useProjectProfiles && (() => {
+                  {/* Projects Section */}
+                  {(() => {
                     // Filter out projects where project_number starts with '0000'
                     const filteredProjects = matchingProjects.filter(project => {
                       const projectNumber = project.project_number || '';
                       return !projectNumber.startsWith('0000');
                     });
+
+                    // Filter projects with profiles similarly
+                    const filteredProjectsWithProfiles = projectsWithProfiles.filter(project => {
+                      const projectNumber = project.project_number || '';
+                      return !projectNumber.startsWith('0000');
+                    });
+
+                    // Combine both arrays and mark them with source for identification
+                    const combinedProjects = [
+                      ...filteredProjects.map(project => ({ ...project, sourceType: 'regular' })),
+                      ...filteredProjectsWithProfiles.map(project => ({ ...project, sourceType: 'withProfiles' }))
+                    ];
+
+                    // Remove duplicates based on project_id
+                    const uniqueProjects = combinedProjects.filter((project, index, array) => 
+                      array.findIndex(p => p.project_id === project.project_id) === index
+                    );
+
+                    // Apply "with profiles" filter if checkbox is checked
+                    const finalFilteredProjects = showOnlyWithProfiles 
+                      ? uniqueProjects.filter(project => project.sourceType === 'withProfiles')
+                      : uniqueProjects;
                     
                     return (
                       <>
-                        <h3>Matching Projects ({filteredProjects.length})</h3>
+                        <div className="projects-header">
+                          <h3>Matching Projects ({finalFilteredProjects.length})</h3>
+                          <div className="projects-filter">
+                            <label className="filter-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={showOnlyWithProfiles}
+                                onChange={(e) => setShowOnlyWithProfiles(e.target.checked)}
+                              />
+                              <span className="checkmark"></span>
+                              Show only projects with profiles
+                            </label>
+                          </div>
+                        </div>
                         
-                        {filteredProjects.length > 0 ? (
+                        {finalFilteredProjects.length > 0 ? (
                           <div className="projects-list">
-                            {filteredProjects
+                            {finalFilteredProjects
                               .sort((a, b) => (b.similarity_score || 0) - (a.similarity_score || 0))
                               .map((project, index) => (
                                 <div key={project.project_id || index} className="project-card">
@@ -388,6 +521,11 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                     <h4 className="project-name">{project.project_name || 'Unnamed Project'}</h4>
                                     <div className="project-badges">
                                       <span className="project-type-badge">{project.project_type}</span>
+                                      {project.sourceType === 'withProfiles' && (
+                                        <span className="profile-badge" title="This project has detailed profile information">
+                                          📊 Profile
+                                        </span>
+                                      )}
                                       {project.similarity_percentage && (
                                         <span className="similarity-badge">
                                           <FaPercentage className="similarity-icon" />
@@ -405,7 +543,7 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                     
                                     <div className="detail-item">
                                       <FaDollarSign className="detail-icon" />
-                                      <span>Value: {formatCurrency(project.project_contract_labor || 0)}</span>
+                                      <span>Value: {formatCurrency(project.project_contract_labor || project.contract_value || 0)}</span>
                                     </div>
 
                                     {project.similarity_score && (
@@ -434,7 +572,7 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                     </div>
                                   )}
                                   
-                                  {/* View Resources Button */}
+                                  {/* Action Buttons */}
                                   <div className="project-actions">
                                     <button
                                       className="view-resources-button"
@@ -444,6 +582,17 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                       <FaUsers className="button-icon" />
                                       View Resources
                                     </button>
+                                    
+                                    {(hasContentArchives(project) || project.sourceType === 'withProfiles') && (
+                                      <button
+                                        className="view-content-archives-button"
+                                        onClick={(e) => handleViewContentArchivesClick(project, e)}
+                                        title="View project profile and content archives"
+                                      >
+                                        <FaEye className="button-icon" />
+                                        {project.sourceType === 'withProfiles' ? 'View Project Profile' : 'View Content Archives'}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               ))}
@@ -456,79 +605,6 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                       </>
                     );
                   })()}
-
-                  {/* Project Profiles Section */}
-                  {useProjectProfiles && (
-                    <>
-                      <h3>Project Profiles with Content Archives ({projectProfiles.length})</h3>
-                      
-                      {projectProfiles.length > 0 ? (
-                        <div className="projects-list">
-                          {projectProfiles.map((profile, index) => (
-                            <div 
-                              key={profile.profile_id || index} 
-                              className="project-card project-profile-card clickable"
-                              onClick={() => handleProjectProfileClick(profile)}
-                            >
-                              <div className="project-header">
-                                <h4 className="project-name">{profile.project_name || 'Unnamed Project'}</h4>
-                                <div className="project-badges">
-                                  <span className="project-type-badge">{profile.project_type}</span>
-                                  <span className="profile-badge">
-                                    <FaBuilding className="profile-icon" />
-                                    Profile
-                                  </span>
-                                </div>
-                              </div>
-                              
-                              <div className="project-details">
-                                <div className="detail-item">
-                                  <FaProjectDiagram className="detail-icon" />
-                                  <span>Owner: {profile.facility_owner || 'Unspecified'}</span>
-                                </div>
-                                
-                                <div className="detail-item">
-                                  <FaBuilding className="detail-icon" />
-                                  <span>Location: {profile.location || 'Unspecified'}</span>
-                                </div>
-                              </div>
-
-                              {profile.content_archives && profile.content_archives.length > 0 && (
-                                <div className="content-archives">
-                                  <h5>Available Content Archives ({profile.content_archives.length})</h5>
-                                  <div className="archive-info">
-                                    <FaEye className="archive-icon" />
-                                    <span>Click to view complete project profile details</span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* View Resources Button */}
-                              <div className="project-actions">
-                                <button
-                                  className="view-resources-button"
-                                  onClick={(e) => handleViewResourcesClick(profile, e)}
-                                  title="View project resources and team members"
-                                >
-                                  <FaUsers className="button-icon" />
-                                  View Resources
-                                </button>
-                              </div>
-
-                              <div className="click-hint">
-                                <FaInfoCircle className="hint-icon" />
-                                <span>Click to view detailed project profile</span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="no-projects">
-                          <p>No project profiles found for this project type.</p>
-                        </div>
-                      )}
-                    </>
-                  )}
                 </div>
 
                 <div className="modal-actions">
@@ -540,6 +616,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                       setAnalysisResult(null);
                       setMatchingProjects([]);
                       setProjectProfiles([]);
+                      setProjectsWithProfiles([]);
+                      setShowOnlyWithProfiles(false);
                       setDescription('');
                     }}
                   >
@@ -710,32 +788,6 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                   </div>
                 )}
 
-                {/* Content Archives */}
-                {selectedProjectProfile.content_archives && selectedProjectProfile.content_archives.length > 0 && (
-                  <div className="detail-section full-width">
-                    <h4 className="section-title">Content Archives ({selectedProjectProfile.content_archives.length})</h4>
-                    <div className="archive-buttons-grid">
-                      {selectedProjectProfile.content_archives.map((archive, index) => (
-                        <button
-                          key={archive.content_archive_id || index}
-                          className="archive-button-detailed"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleContentArchiveClick(archive);
-                          }}
-                        >
-                          <FaEye className="archive-icon" />
-                          <div className="archive-info-detailed">
-                            <span className="archive-name">{archive.name || `Archive ${index + 1}`}</span>
-                            <span className="archive-meta">
-                              {archive.created_date && `Created: ${formatDate(archive.created_date)}`}
-                            </span>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>

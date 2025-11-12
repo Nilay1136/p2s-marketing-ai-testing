@@ -178,6 +178,64 @@
   line-height: 1.4;
 }
 
+/* Discipline Filters */
+.resources-modal .discipline-filters {
+  margin-bottom: 24px;
+  background-color: white;
+  border: 1px solid rgba(35, 21, 32, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.resources-modal .filter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+}
+
+.resources-modal .filter-icon {
+  color: rgb(52, 106, 134);
+  font-size: 14px;
+}
+
+.resources-modal .filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.resources-modal .filter-button {
+  background-color: rgba(52, 106, 134, 0.1);
+  color: rgb(52, 106, 134);
+  border: 1px solid rgba(52, 106, 134, 0.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.resources-modal .filter-button:hover {
+  background-color: rgba(52, 106, 134, 0.15);
+  border-color: rgba(52, 106, 134, 0.3);
+}
+
+.resources-modal .filter-button.active {
+  background-color: rgb(52, 106, 134);
+  color: white;
+  border-color: rgb(52, 106, 134);
+}
+
+.resources-modal .filter-button.active:hover {
+  background-color: rgb(45, 95, 120);
+}
+
 /* Resources List */
 .resources-modal .resources-list {
   display: flex;
@@ -324,6 +382,20 @@
   .resources-modal .resource-hours {
     align-self: flex-start;
   }
+
+  .resources-modal .discipline-filters {
+    margin-bottom: 16px;
+    padding: 12px;
+  }
+
+  .resources-modal .filter-buttons {
+    gap: 6px;
+  }
+
+  .resources-modal .filter-button {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -341,5 +413,15 @@
 
   .resources-modal .resource-name {
     font-size: 15px;
+  }
+
+  .resources-modal .filter-header {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .resources-modal .filter-button {
+    font-size: 11px;
+    padding: 4px 8px;
   }
 }
