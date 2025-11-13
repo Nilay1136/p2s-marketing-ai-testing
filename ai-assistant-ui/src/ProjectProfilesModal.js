@@ -292,26 +292,6 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     }
   };
 
-  const hasContentArchives = (project) => {
-    // Check if project has direct content archives
-    if (project.content_archives && project.content_archives.length > 0) {
-      return true;
-    }
-    
-    // Check if there's a matching project profile using improved matching logic
-    const matchingProfile = projectProfiles.find(profile => 
-      // Try multiple matching strategies
-      profile.project_id === project.project_id ||
-      profile.ProjectID === project.project_id ||
-      profile.project_name === project.project_name ||
-      (profile.project_name && project.project_name && 
-       (profile.project_name.toLowerCase().includes(project.project_name.toLowerCase()) ||
-        project.project_name.toLowerCase().includes(profile.project_name.toLowerCase())))
-    );
-    
-    return matchingProfile && matchingProfile.content_archives && matchingProfile.content_archives.length > 0;
-  };
-
   const handleResourcesModalClose = () => {
     setIsResourcesModalOpen(false);
     setSelectedProjectForResources(null);
@@ -478,16 +458,51 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                       return !projectNumber.startsWith('0000');
                     });
 
-                    // Combine both arrays and mark them with source for identification
-                    const combinedProjects = [
-                      ...filteredProjects.map(project => ({ ...project, sourceType: 'regular' })),
-                      ...filteredProjectsWithProfiles.map(project => ({ ...project, sourceType: 'withProfiles' }))
-                    ];
+                    // Enhanced deduplication function with profile priority
+                    const deduplicateWithProfilePriority = (regularProjects, profileProjects) => {
+                      const projectMap = new Map();
+                      
+                      // First, add all regular projects
+                      regularProjects.forEach(project => {
+                        projectMap.set(project.project_id, { 
+                          ...project, 
+                          sourceType: 'regular',
+                          hasProfile: false 
+                        });
+                      });
+                      
+                      // Then, add profile projects (will overwrite duplicates with profile priority)
+                      profileProjects.forEach(project => {
+                        projectMap.set(project.project_id, { 
+                          ...project, 
+                          sourceType: 'withProfiles',
+                          hasProfile: true 
+                        });
+                      });
+                      
+                      return Array.from(projectMap.values());
+                    };
 
-                    // Remove duplicates based on project_id
-                    const uniqueProjects = combinedProjects.filter((project, index, array) => 
-                      array.findIndex(p => p.project_id === project.project_id) === index
+                    // Debug logging
+                    console.log('🔍 Before deduplication:', {
+                      regularProjects_count: filteredProjects.length,
+                      profileProjects_count: filteredProjectsWithProfiles.length,
+                      total: filteredProjects.length + filteredProjectsWithProfiles.length
+                    });
+
+                    // NEW: Enhanced deduplication with profile priority
+                    const uniqueProjects = deduplicateWithProfilePriority(
+                      filteredProjects, 
+                      filteredProjectsWithProfiles
                     );
+
+                    // Debug logging
+                    console.log('✅ After deduplication:', {
+                      unique_count: uniqueProjects.length,
+                      with_profiles_count: uniqueProjects.filter(p => p.sourceType === 'withProfiles').length,
+                      regular_only_count: uniqueProjects.filter(p => p.sourceType === 'regular').length,
+                      duplicates_removed: (filteredProjects.length + filteredProjectsWithProfiles.length) - uniqueProjects.length
+                    });
 
                     // Apply "with profiles" filter if checkbox is checked
                     const finalFilteredProjects = showOnlyWithProfiles 
@@ -553,24 +568,6 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                       </div>
                                     )}
                                   </div>
-
-                                  {project.content_archives && project.content_archives.length > 0 && (
-                                    <div className="content-archives">
-                                      <h5>Available Content:</h5>
-                                      <div className="archive-buttons">
-                                        {project.content_archives.map((archive, archiveIndex) => (
-                                          <button
-                                            key={archive.id || archiveIndex}
-                                            className="archive-button"
-                                            onClick={() => handleContentArchiveClick(archive)}
-                                          >
-                                            <FaEye className="archive-icon" />
-                                            {archive.name || `Content ${archiveIndex + 1}`}
-                                          </button>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
                                   
                                   {/* Action Buttons */}
                                   <div className="project-actions">
@@ -583,14 +580,14 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                                       View Resources
                                     </button>
                                     
-                                    {(hasContentArchives(project) || project.sourceType === 'withProfiles') && (
+                                    {project.sourceType === 'withProfiles' && (
                                       <button
                                         className="view-content-archives-button"
                                         onClick={(e) => handleViewContentArchivesClick(project, e)}
                                         title="View project profile and content archives"
                                       >
                                         <FaEye className="button-icon" />
-                                        {project.sourceType === 'withProfiles' ? 'View Project Profile' : 'View Content Archives'}
+                                        View Project Profile
                                       </button>
                                     )}
                                   </div>

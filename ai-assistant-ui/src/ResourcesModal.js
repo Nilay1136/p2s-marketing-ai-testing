@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { FaTimes, FaUser, FaClock, FaCalendarAlt, FaSpinner, FaBuilding, FaUsers, FaFilter } from 'react-icons/fa';
+import { FaTimes, FaUser, FaClock, FaSpinner, FaBuilding, FaUsers, FaFilter } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_ENDPOINTS } from './apiConfig';
 import ResumeModal from './ResumeModal';
@@ -289,17 +289,6 @@ const ResourcesModal = ({ isOpen, onClose, projectId, projectName }) => {
                           <div className="detail-item">
                             <FaUser className="detail-icon" />
                             <span>Studio Leader: {resource.StudioLeader || 'N/A'}</span>
-                          </div>
-                        </div>
-
-                        <div className="detail-row">
-                          <div className="detail-item">
-                            <FaCalendarAlt className="detail-icon" />
-                            <span>Start: {formatDate(resource.earliest_date)}</span>
-                          </div>
-                          <div className="detail-item">
-                            <FaCalendarAlt className="detail-icon" />
-                            <span>End: {formatDate(resource.latest_date)}</span>
                           </div>
                         </div>
 
