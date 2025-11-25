@@ -475,6 +475,31 @@
   line-height: 1.5;
 }
 
+.analysis-client {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(52, 106, 134, 0.05);
+  border-left: 4px solid rgb(52, 106, 134);
+  border-radius: 6px;
+}
+
+.analysis-client h5 {
+  margin: 0 0 8px 0;
+  color: rgb(35, 21, 32);
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.client-name-value {
+  margin: 0;
+  color: rgb(52, 106, 134);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .analysis-meta {
   color: rgb(52, 106, 134);
   font-size: 14px;
@@ -499,6 +524,8 @@
 .projects-filter {
   display: flex;
   align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .filter-checkbox {
