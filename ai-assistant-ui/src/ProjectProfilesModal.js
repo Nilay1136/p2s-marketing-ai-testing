@@ -23,6 +23,10 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   const [projectsWithProfiles, setProjectsWithProfiles] = useState([]);
   const [showOnlyWithProfiles, setShowOnlyWithProfiles] = useState(false);
   
+  // Client-based filtering state
+  const [matchingProjectsByClient, setMatchingProjectsByClient] = useState([]);
+  const [showOnlyClientProjects, setShowOnlyClientProjects] = useState(false);
+  
   // Resources modal state
   const [isResourcesModalOpen, setIsResourcesModalOpen] = useState(false);
   const [selectedProjectForResources, setSelectedProjectForResources] = useState(null);
@@ -39,6 +43,8 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
     setProjectProfiles([]);
     setProjectsWithProfiles([]);
     setShowOnlyWithProfiles(false);
+    setMatchingProjectsByClient([]);
+    setShowOnlyClientProjects(false);
     setDescription('');
     setStep('upload');
     setSelectedContentArchive(null);
@@ -101,7 +107,10 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
       formData.append('similarity_threshold', '0.1');
       formData.append('top_similar_count', '10');
 
-      const response = await fetch(`${API_ENDPOINTS.BASE}${API_ENDPOINTS.RFP.ANALYZE_WITH_SIMILARITY}`, {
+      const fullUrl = `${API_ENDPOINTS.BASE}${API_ENDPOINTS.RFP.ANALYZE_WITH_SIMILARITY}`;
+      console.log('🌐 Calling API:', fullUrl);
+      
+      const response = await fetch(fullUrl, {
         method: 'POST',
         body: formData,
       });
@@ -113,12 +122,79 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
 
       const data = await response.json();
       
+      // ⚠️ CRITICAL DEBUG: Log IMMEDIATELY after parsing JSON
+      console.log('🚨 IMMEDIATE RESPONSE CHECK:');
+      console.log('Response has rfp_analysis?:', 'rfp_analysis' in data);
+      console.log('rfp_analysis has client_name key?:', data.rfp_analysis && 'client_name' in data.rfp_analysis);
+      console.log('Direct access - data.rfp_analysis.client_name:', data.rfp_analysis?.client_name);
+      
+      // Debug: Log the RFP analysis response
+      console.log('=== RFP ANALYSIS RESPONSE ===');
+      console.log('Full response:', data);
+      console.log('RFP Analysis object:', data.rfp_analysis);
+      console.log('🔍 RAW client_name from API:', JSON.stringify(data.rfp_analysis?.client_name));
+      console.log('Client Name field:', data.rfp_analysis?.client_name);
+      console.log('Client Name type:', typeof data.rfp_analysis?.client_name);
+      console.log('Client Name exists?:', !!data.rfp_analysis?.client_name);
+      console.log('Brief Description:', data.rfp_analysis?.brief_description?.substring(0, 50) + '...');
+      console.log('All keys in rfp_analysis:', Object.keys(data.rfp_analysis || {}));
+      console.log('===========================');
+      
       if (data.rfp_analysis && data.rfp_analysis.success) {
+        console.log('Setting analysis result with data:', {
+          detected_project_type: data.rfp_analysis.detected_project_type,
+          brief_description: data.rfp_analysis.brief_description?.substring(0, 30) + '...',
+          client_name: data.rfp_analysis.client_name,
+          confidence_score: data.rfp_analysis.confidence_score
+        });
         setAnalysisResult(data.rfp_analysis);
         
         // Get projects from response
         let projects = data.matching_projects.projects || [];
         setMatchingProjects(projects);
+        
+        // Get client-based projects if available
+        let clientProjects = data.matching_projects_by_client?.projects || [];
+        setMatchingProjectsByClient(clientProjects);
+        
+        console.log('📊 Project Sets:', {
+          typeBasedProjects: projects.length,
+          clientBasedProjects: clientProjects.length,
+          clientName: data.rfp_analysis.client_name
+        });
+        
+        // Detailed analysis of client projects
+        if (clientProjects.length > 0) {
+          console.log('🔍 Analyzing Client Projects for Duplicates:');
+          const projectIdCounts = {};
+          const projectNameCounts = {};
+          
+          clientProjects.forEach((project, index) => {
+            const id = project.project_id;
+            const name = project.project_name;
+            
+            projectIdCounts[id] = (projectIdCounts[id] || 0) + 1;
+            projectNameCounts[name] = (projectNameCounts[name] || 0) + 1;
+            
+            console.log(`  [${index}] ID: ${id}, Name: ${name}`);
+          });
+          
+          console.log('🔢 Duplicate Analysis:');
+          const duplicateIds = Object.entries(projectIdCounts).filter(([_, count]) => count > 1);
+          const duplicateNames = Object.entries(projectNameCounts).filter(([_, count]) => count > 1);
+          
+          if (duplicateIds.length > 0) {
+            console.log('⚠️ DUPLICATE PROJECT IDs FOUND:', duplicateIds);
+          } else {
+            console.log('✅ No duplicate project IDs');
+          }
+          
+          if (duplicateNames.length > 0) {
+            console.log('⚠️ DUPLICATE PROJECT NAMES FOUND:', duplicateNames);
+          } else {
+            console.log('✅ No duplicate project names');
+          }
+        }
         
         // Always fetch project profiles for the detected project type
         if (data.rfp_analysis.detected_project_type) {
@@ -234,8 +310,17 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
   const handleViewContentArchivesClick = (project, event) => {
     event.stopPropagation();
     
-    // If this is a project with profiles, show the project profile directly
+    // If this is a project with profiles (client-based or has content_archives)
     if (project.sourceType === 'withProfiles') {
+      console.log('📋 Opening project profile for:', project.project_name);
+      console.log('Project data includes profile fields:', {
+        hasLocation: !!project.location,
+        hasFacilityOwner: !!project.facility_owner,
+        hasStartDate: !!project.start_date,
+        hasClientContact: !!project.client_contact
+      });
+      
+      // Backend now includes all profile fields directly - no additional fetch needed!
       setSelectedProjectProfile(project);
       setIsProjectProfileModalOpen(true);
       return;
@@ -421,6 +506,13 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                 <div className="analysis-results">
                   <h3>Analysis Results</h3>
                   
+                  {/* Debug: Log when rendering */}
+                  {console.log('=== RENDERING ANALYSIS RESULTS ===')}
+                  {console.log('analysisResult:', analysisResult)}
+                  {console.log('client_name in analysisResult:', analysisResult.client_name)}
+                  {console.log('Will render client name section?:', !!analysisResult.client_name)}
+                  {console.log('====================================')}
+                  
                   <div className="analysis-card">
                     <div className="analysis-header">
                       <FaProjectDiagram className="project-icon" />
@@ -437,6 +529,18 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                       </div>
                     )}
 
+                    {(() => {
+                      console.log('Checking client_name condition:', analysisResult.client_name);
+                      return analysisResult.client_name ? (
+                        <div className="analysis-client">
+                          <h5>Client Name</h5>
+                          <p className="client-name-value">{analysisResult.client_name}</p>
+                        </div>
+                      ) : (
+                        console.log('Client name section NOT rendered - client_name is falsy') || null
+                      );
+                    })()}
+
                     <div className="analysis-meta">
                       <span>Confidence: {analysisResult.confidence_score ? `${(analysisResult.confidence_score * 100).toFixed(1)}%` : 'N/A'}</span>
                     </div>
@@ -446,74 +550,133 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                 <div className="matching-projects">
                   {/* Projects Section */}
                   {(() => {
-                    // Filter out projects where project_number starts with '0000'
-                    const filteredProjects = matchingProjects.filter(project => {
-                      const projectNumber = project.project_number || '';
-                      return !projectNumber.startsWith('0000');
-                    });
-
-                    // Filter projects with profiles similarly
-                    const filteredProjectsWithProfiles = projectsWithProfiles.filter(project => {
-                      const projectNumber = project.project_number || '';
-                      return !projectNumber.startsWith('0000');
-                    });
-
-                    // Enhanced deduplication function with profile priority
-                    const deduplicateWithProfilePriority = (regularProjects, profileProjects) => {
+                    // Determine which project set to use based on client filter toggle
+                    let finalFilteredProjects;
+                    
+                    if (showOnlyClientProjects && matchingProjectsByClient.length > 0) {
+                      // When client filter is ON, show ONLY client-based projects
+                      // Filter out projects with '0000' prefix
+                      const filteredClientProjects = matchingProjectsByClient.filter(project => {
+                        const projectNumber = project.project_number || '';
+                        return !projectNumber.startsWith('0000');
+                      });
+                      
+                      // Deduplicate by project_id and detect profiles
                       const projectMap = new Map();
-                      
-                      // First, add all regular projects
-                      regularProjects.forEach(project => {
-                        projectMap.set(project.project_id, { 
-                          ...project, 
-                          sourceType: 'regular',
-                          hasProfile: false 
-                        });
+                      filteredClientProjects.forEach(project => {
+                        if (!projectMap.has(project.project_id)) {
+                          // Check if project has content_archives (profiles)
+                          const hasContentArchives = project.content_archives && 
+                                                     Array.isArray(project.content_archives) && 
+                                                     project.content_archives.length > 0;
+                          
+                          projectMap.set(project.project_id, {
+                            ...project,
+                            sourceType: hasContentArchives ? 'withProfiles' : 'regular',
+                            hasProfile: hasContentArchives
+                          });
+                        }
                       });
                       
-                      // Then, add profile projects (will overwrite duplicates with profile priority)
-                      profileProjects.forEach(project => {
-                        projectMap.set(project.project_id, { 
-                          ...project, 
-                          sourceType: 'withProfiles',
-                          hasProfile: true 
-                        });
-                      });
+                      finalFilteredProjects = Array.from(projectMap.values());
                       
-                      return Array.from(projectMap.values());
-                    };
+                      // Count projects with profiles
+                      const projectsWithProfiles = finalFilteredProjects.filter(p => p.hasProfile).length;
+                      
+                      console.log('🎯 Client Filter Active:', {
+                        rawClientProjects: matchingProjectsByClient.length,
+                        afterFiltering: filteredClientProjects.length,
+                        afterDeduplication: finalFilteredProjects.length,
+                        withProfiles: projectsWithProfiles,
+                        duplicatesRemoved: filteredClientProjects.length - finalFilteredProjects.length,
+                        clientName: analysisResult?.client_name
+                      });
+                    } else {
+                      // When client filter is OFF, use type-based projects with deduplication
+                      const baseProjects = matchingProjects;
 
-                    // Debug logging
-                    console.log('🔍 Before deduplication:', {
-                      regularProjects_count: filteredProjects.length,
-                      profileProjects_count: filteredProjectsWithProfiles.length,
-                      total: filteredProjects.length + filteredProjectsWithProfiles.length
-                    });
+                      // Filter out projects where project_number starts with '0000'
+                      const filteredProjects = baseProjects.filter(project => {
+                        const projectNumber = project.project_number || '';
+                        return !projectNumber.startsWith('0000');
+                      });
 
-                    // NEW: Enhanced deduplication with profile priority
-                    const uniqueProjects = deduplicateWithProfilePriority(
-                      filteredProjects, 
-                      filteredProjectsWithProfiles
-                    );
+                      // Filter projects with profiles similarly
+                      const filteredProjectsWithProfiles = projectsWithProfiles.filter(project => {
+                        const projectNumber = project.project_number || '';
+                        return !projectNumber.startsWith('0000');
+                      });
 
-                    // Debug logging
-                    console.log('✅ After deduplication:', {
-                      unique_count: uniqueProjects.length,
-                      with_profiles_count: uniqueProjects.filter(p => p.sourceType === 'withProfiles').length,
-                      regular_only_count: uniqueProjects.filter(p => p.sourceType === 'regular').length,
-                      duplicates_removed: (filteredProjects.length + filteredProjectsWithProfiles.length) - uniqueProjects.length
-                    });
+                      // Enhanced deduplication function with profile priority
+                      const deduplicateWithProfilePriority = (regularProjects, profileProjects) => {
+                        const projectMap = new Map();
+                        
+                        // First, add all regular projects
+                        regularProjects.forEach(project => {
+                          projectMap.set(project.project_id, { 
+                            ...project, 
+                            sourceType: 'regular',
+                            hasProfile: false 
+                          });
+                        });
+                        
+                        // Then, add profile projects (will overwrite duplicates with profile priority)
+                        profileProjects.forEach(project => {
+                          projectMap.set(project.project_id, { 
+                            ...project, 
+                            sourceType: 'withProfiles',
+                            hasProfile: true 
+                          });
+                        });
+                        
+                        return Array.from(projectMap.values());
+                      };
 
-                    // Apply "with profiles" filter if checkbox is checked
-                    const finalFilteredProjects = showOnlyWithProfiles 
-                      ? uniqueProjects.filter(project => project.sourceType === 'withProfiles')
-                      : uniqueProjects;
+                      // Debug logging
+                      console.log('🔍 Before deduplication:', {
+                        regularProjects_count: filteredProjects.length,
+                        profileProjects_count: filteredProjectsWithProfiles.length,
+                        total: filteredProjects.length + filteredProjectsWithProfiles.length
+                      });
+
+                      // Enhanced deduplication with profile priority
+                      const uniqueProjects = deduplicateWithProfilePriority(
+                        filteredProjects, 
+                        filteredProjectsWithProfiles
+                      );
+
+                      // Debug logging
+                      console.log('✅ After deduplication:', {
+                        unique_count: uniqueProjects.length,
+                        with_profiles_count: uniqueProjects.filter(p => p.sourceType === 'withProfiles').length,
+                        regular_only_count: uniqueProjects.filter(p => p.sourceType === 'regular').length,
+                        duplicates_removed: (filteredProjects.length + filteredProjectsWithProfiles.length) - uniqueProjects.length
+                      });
+
+                      finalFilteredProjects = uniqueProjects;
+                    }
+
+                    // Apply "with profiles" filter if checkbox is checked (works for both modes)
+                    if (showOnlyWithProfiles) {
+                      finalFilteredProjects = finalFilteredProjects.filter(project => project.sourceType === 'withProfiles');
+                    }
                     
                     return (
                       <>
                         <div className="projects-header">
                           <h3>Matching Projects ({finalFilteredProjects.length})</h3>
                           <div className="projects-filter">
+                            {matchingProjectsByClient.length > 0 && analysisResult.client_name && (
+                              <label className="filter-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={showOnlyClientProjects}
+                                  onChange={(e) => setShowOnlyClientProjects(e.target.checked)}
+                                />
+                                <span className="checkmark"></span>
+                                Same Client ({matchingProjectsByClient.length})
+                              </label>
+                            )}
                             <label className="filter-checkbox">
                               <input
                                 type="checkbox"
@@ -531,7 +694,7 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                             {finalFilteredProjects
                               .sort((a, b) => (b.similarity_score || 0) - (a.similarity_score || 0))
                               .map((project, index) => (
-                                <div key={project.project_id || index} className="project-card">
+                                <div key={`${showOnlyClientProjects ? 'client' : 'type'}-${project.project_id || index}`} className="project-card">
                                   <div className="project-header">
                                     <h4 className="project-name">{project.project_name || 'Unnamed Project'}</h4>
                                     <div className="project-badges">
@@ -607,16 +770,18 @@ const ProjectProfilesModal = ({ isOpen, onClose, userId, sessionId }) => {
                 <div className="modal-actions">
                   <button 
                     className="new-analysis-btn"
-                    onClick={() => {
-                      setStep('upload');
-                      setUploadedFile(null);
-                      setAnalysisResult(null);
-                      setMatchingProjects([]);
-                      setProjectProfiles([]);
-                      setProjectsWithProfiles([]);
-                      setShowOnlyWithProfiles(false);
-                      setDescription('');
-                    }}
+                  onClick={() => {
+                    setStep('upload');
+                    setUploadedFile(null);
+                    setAnalysisResult(null);
+                    setMatchingProjects([]);
+                    setMatchingProjectsByClient([]);
+                    setProjectProfiles([]);
+                    setProjectsWithProfiles([]);
+                    setShowOnlyWithProfiles(false);
+                    setShowOnlyClientProjects(false);
+                    setDescription('');
+                  }}
                   >
                     Analyze Another RFP
                   </button>
